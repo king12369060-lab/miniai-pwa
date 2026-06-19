@@ -1,4 +1,4 @@
-const CACHE_NAME = "miniai-pwa-v7-cache-1";
+const CACHE_NAME = "miniai-local-v8-cache-1";
 const APP_SHELL = ["./","./index.html","./manifest.json","./service-worker.js","./icon-192.svg","./icon-512.svg"];
 
 self.addEventListener("install", (event) => {

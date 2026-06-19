@@ -1,7 +1,7 @@
 {
-  "name": "MiniAI PWA v7",
+  "name": "MiniAI Local v8",
   "short_name": "MiniAI",
-  "description": "本機知識庫、大型模型、任務通知與行事曆匯出的私人 AI 助理。",
+  "description": "完全本機、不需 API Key 的私人知識庫與任務助理。",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

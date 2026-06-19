@@ -4,9 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#07111f" />
-  <meta name="description" content="MiniAI PWA v7：本機知識庫、大型模型、任務通知、行事曆匯出的私人 AI 助理。" />
+  <meta name="description" content="MiniAI PWA Local v8：完全本機、不需 API Key 的私人知識庫與任務助理。" />
   <link rel="manifest" href="./manifest.json" />
-  <title>MiniAI PWA v7</title>
+  <title>MiniAI Local v8</title>
   <style>
     :root{
       --bg:#050816;--card:rgba(30,41,59,.95);--soft:rgba(255,255,255,.07);
@@ -15,46 +15,46 @@
       --danger:#fb7185;--shadow:0 24px 80px rgba(0,0,0,.42)
     }
     *{box-sizing:border-box}
-    html,body{margin:0;min-height:100%;background:
+    html,body{margin:0;min-height:100%;width:100%;max-width:100%;overflow-x:hidden;background:
       radial-gradient(circle at top left,rgba(56,189,248,.18),transparent 32rem),
       radial-gradient(circle at 85% 8%,rgba(52,211,153,.10),transparent 24rem),
       radial-gradient(circle at bottom right,rgba(167,139,250,.22),transparent 30rem),var(--bg);
       color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif}
     button,textarea,input,select{font-family:inherit}
-    .app{width:min(1120px,100%);margin:0 auto;min-height:100vh;display:grid;grid-template-rows:auto 1fr auto}
+    .app{width:100%;max-width:1120px;margin:0 auto;min-height:100vh;display:grid;grid-template-rows:auto 1fr auto;overflow-x:hidden}
     header{padding:calc(18px + env(safe-area-inset-top)) 16px 14px;background:rgba(5,8,22,.82);backdrop-filter:blur(18px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
     .topline{display:flex;justify-content:space-between;align-items:center;gap:12px}
     .brand{display:flex;align-items:center;gap:12px;min-width:0}
     .logo{width:46px;height:46px;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#07111f;font-weight:950;box-shadow:0 14px 40px rgba(56,189,248,.25)}
     h1{margin:0;font-size:20px;line-height:1.2}.subtitle{margin:4px 0 0;color:var(--muted);font-size:13px;line-height:1.35}
     .badge{border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--muted);border-radius:999px;padding:7px 10px;font-size:12px;white-space:nowrap}
-    .toolbar,.quick-row{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}.toolbar{padding-top:14px}.toolbar::-webkit-scrollbar,.quick-row::-webkit-scrollbar{display:none}
-    button{border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:14px;padding:10px 12px;cursor:pointer;font-size:14px;white-space:nowrap}
+    .toolbar,.quick-row{display:flex;gap:8px;flex-wrap:wrap;overflow-x:hidden;max-width:100%}.toolbar{padding-top:14px}
+    button{border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:14px;padding:10px 12px;cursor:pointer;font-size:14px;white-space:normal;line-height:1.25;max-width:100%;overflow-wrap:anywhere}
     button.primary{border:0;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#07111f;font-weight:850}
     button.ok{border-color:rgba(52,211,153,.35);background:rgba(52,211,153,.14);color:#bbf7d0}
     button.warn{border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.13);color:#fde68a}
     button.danger{border-color:rgba(251,113,133,.35);background:rgba(251,113,133,.16);color:#fecdd3}
-    main{padding:16px;overflow-y:auto}
+    main{padding:16px;overflow-y:auto;overflow-x:hidden;max-width:100%}
     .dashboard{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
     .stat{border:1px solid var(--line);background:rgba(255,255,255,.055);border-radius:18px;padding:12px;min-height:74px}
     .stat .label{color:var(--muted);font-size:12px;margin-bottom:4px}.stat .value{font-size:19px;font-weight:850;overflow-wrap:anywhere}
-    .mode-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+    .mode-row{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:14px}
     .mode-card{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.045);padding:12px}
     .mode-card label{display:block;margin-bottom:7px;font-size:12px;color:var(--muted)}
     .quick-row{margin-bottom:14px}
     .chat{display:flex;flex-direction:column;gap:12px;padding-bottom:16px}
-    .msg{max-width:92%;padding:12px 14px;border-radius:18px;line-height:1.65;font-size:15px;white-space:pre-wrap;box-shadow:var(--shadow)}
+    .msg{max-width:92%;padding:12px 14px;border-radius:18px;line-height:1.65;font-size:15px;white-space:pre-wrap;box-shadow:var(--shadow);overflow-wrap:anywhere;word-break:break-word}
     .msg.user{align-self:flex-end;border-bottom-right-radius:6px;background:linear-gradient(135deg,rgba(56,189,248,.98),rgba(167,139,250,.95));color:#07111f;font-weight:650}
     .msg.ai{align-self:flex-start;border-bottom-left-radius:6px;background:var(--card);border:1px solid var(--line)}
     .msg.system{align-self:center;max-width:96%;background:rgba(255,255,255,.05);border:1px dashed var(--line);color:var(--muted);box-shadow:none;font-size:13px}
     .sources{margin-top:10px;border-top:1px solid var(--line);padding-top:10px;color:var(--muted);font-size:12px}
-    .source-pill{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:5px 8px;margin:4px 5px 0 0;background:rgba(255,255,255,.05);max-width:100%;overflow-wrap:anywhere}
-    footer{padding:12px 16px calc(14px + env(safe-area-inset-bottom));background:rgba(5,8,22,.84);backdrop-filter:blur(18px);border-top:1px solid var(--line);position:sticky;bottom:0}
-    .composer{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end}
-    textarea{width:100%;min-height:48px;max-height:190px;resize:vertical;border:1px solid var(--line);border-radius:17px;padding:12px 14px;background:rgba(255,255,255,.07);color:var(--text);outline:none;line-height:1.55;font-size:15px}
-    input,select{width:100%;border:1px solid var(--line);border-radius:14px;padding:12px;background:rgba(255,255,255,.07);color:var(--text);outline:none;font-size:15px}
+    .source-pill{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:5px 8px;margin:4px 5px 0 0;background:rgba(255,255,255,.05);max-width:100%;overflow-wrap:anywhere;word-break:break-word}
+    footer{padding:12px 16px calc(14px + env(safe-area-inset-bottom));background:rgba(5,8,22,.84);backdrop-filter:blur(18px);border-top:1px solid var(--line);position:sticky;bottom:0;overflow-x:hidden;max-width:100%}
+    .composer{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;max-width:100%}
+    textarea{width:100%;max-width:100%;min-height:48px;max-height:190px;resize:vertical;border:1px solid var(--line);border-radius:17px;padding:12px 14px;background:rgba(255,255,255,.07);color:var(--text);outline:none;line-height:1.55;font-size:15px;overflow-wrap:anywhere}
+    input,select{width:100%;max-width:100%;min-width:0;border:1px solid var(--line);border-radius:14px;padding:12px;background:rgba(255,255,255,.07);color:var(--text);outline:none;font-size:15px}
     textarea::placeholder,input::placeholder{color:rgba(203,213,225,.72)}.hint{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.45}
-    dialog{width:min(960px,calc(100% - 26px));border:1px solid var(--line);border-radius:22px;color:var(--text);background:#101827;box-shadow:var(--shadow);padding:0}
+    dialog{width:min(960px,calc(100vw - 20px));max-width:calc(100vw - 20px);border:1px solid var(--line);border-radius:22px;color:var(--text);background:#101827;box-shadow:var(--shadow);padding:0;overflow-x:hidden}
     dialog::backdrop{background:rgba(0,0,0,.58);backdrop-filter:blur(6px)}.modal{padding:18px}.modal h2{margin:0 0 8px;font-size:19px}.modal p,.modal li{color:var(--muted);line-height:1.65;font-size:14px}
     .form-grid{display:grid;gap:10px;margin-top:12px}label{font-size:13px;color:var(--muted)}
     .modal-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-top:14px}
@@ -70,6 +70,44 @@
     .drop-zone strong{color:var(--text)}
     @media(max-width:900px){.dashboard{grid-template-columns:1fr 1fr}.dashboard .stat:last-child{grid-column:1 / -1}}
     @media(max-width:760px){.mode-row,.two-cols,.three-cols{grid-template-columns:1fr}.msg{max-width:95%}.logo{width:38px;height:38px}.stat .value{font-size:17px}}
+
+    @media(max-width:760px){
+      header{padding-left:12px;padding-right:12px}
+      main{padding:12px}
+      footer{padding-left:12px;padding-right:12px}
+      .topline{align-items:flex-start}
+      .brand{gap:10px}
+      h1{font-size:18px}
+      .subtitle{font-size:12px}
+      .badge{font-size:11px;padding:6px 8px}
+      .toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+      .toolbar button{width:100%;min-width:0;padding:10px 8px;font-size:13px}
+      .quick-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+      .quick-row button{width:100%;min-width:0;padding:10px 8px;font-size:13px}
+      .dashboard{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+      .stat{min-height:68px;padding:10px}
+      .stat .value{font-size:16px}
+      .mode-row,.two-cols,.three-cols{grid-template-columns:1fr}
+      .msg{max-width:100%;width:fit-content}
+      .msg.ai{max-width:100%}
+      .msg.user{max-width:92%}
+      .composer{grid-template-columns:1fr}
+      .composer button{width:100%}
+      .logo{width:38px;height:38px}
+      dialog{max-height:88vh}
+      .modal{padding:14px}
+      .modal-actions{display:grid;grid-template-columns:1fr 1fr}
+      .modal-actions button{width:100%}
+      .list{max-height:56vh}
+    }
+    @media(max-width:390px){
+      .toolbar,.quick-row{grid-template-columns:1fr}
+      .dashboard{grid-template-columns:1fr}
+      .topline{display:grid;grid-template-columns:1fr}
+      .badge{justify-self:start}
+      .modal-actions{grid-template-columns:1fr}
+    }
+
   </style>
 </head>
 <body>
@@ -79,13 +117,12 @@
       <div class="brand">
         <div class="logo">AI</div>
         <div>
-          <h1>MiniAI PWA v7</h1>
-          <p class="subtitle">通知與行事曆版：知識庫、任務、每日整理、ICS 匯出、大型模型。</p>
+          <h1>MiniAI Local v8</h1>
+          <p class="subtitle">完全本機版：手機螢幕適配，知識庫、任務、提醒、備份都在本機。</p>
         </div>
       </div>
       <span class="badge" id="statusBadge">初始化中</span>
     </div>
-
     <div class="toolbar">
       <button class="primary" id="installBtn" hidden>安裝到手機</button>
       <button id="newChatBtn">新對話</button>
@@ -111,7 +148,7 @@
       <div class="stat"><div class="label">任務</div><div class="value" id="statTasks">0</div></div>
       <div class="stat"><div class="label">今日到期</div><div class="value" id="statDueToday">0</div></div>
       <div class="stat"><div class="label">通知</div><div class="value" id="statNotify">未啟用</div></div>
-      <div class="stat"><div class="label">引擎</div><div class="value" id="statEngine">本機</div></div>
+      <div class="stat"><div class="label">模式</div><div class="value">本機</div></div>
     </section>
 
     <section class="mode-row">
@@ -125,13 +162,6 @@
           <option value="sop">整理成 SOP</option>
           <option value="compare">比較與取捨</option>
           <option value="assistant">私人助理建議</option>
-        </select>
-      </div>
-      <div class="mode-card">
-        <label>回答方式</label>
-        <select id="answerEngine">
-          <option value="hybrid">混合：本機知識 + 大型模型</option>
-          <option value="local">只用本機搜尋</option>
         </select>
       </div>
     </section>
@@ -152,17 +182,13 @@
       <textarea id="userInput" placeholder="輸入問題、筆記、任務或待整理內容。"></textarea>
       <button class="primary" type="submit">送出</button>
     </form>
-    <div class="hint">通知是本機提醒：App 開著或重新開啟時最穩。行事曆匯出會產生 .ics，可匯入 Google Calendar 等行事曆。</div>
+    <div class="hint">完全本機版：不會呼叫大型模型、不需要 Vercel 後端、不需要 API Key。</div>
   </footer>
 </div>
 
 <dialog id="settingsDialog"><div class="modal">
   <h2>設定</h2>
   <div class="form-grid">
-    <label>API URL</label>
-    <input id="apiUrl" placeholder="/api/chat" />
-    <label>每次送給模型的本機知識片段數</label>
-    <select id="contextLimit"><option value="3">3 段，較省</option><option value="5" selected>5 段，推薦</option><option value="8">8 段，較完整</option></select>
     <label>每日整理偏好</label>
     <select id="briefStyle"><option value="compact">簡潔版</option><option value="detailed">詳細版</option><option value="action">行動優先</option></select>
     <label>任務提醒檢查間隔</label>
@@ -185,7 +211,7 @@
 <dialog id="addTaskDialog"><div class="modal">
   <h2>新增任務</h2>
   <div class="form-grid">
-    <label>任務內容</label><input id="taskTitle" placeholder="例如：上傳 MiniAI v7 到 GitHub" />
+    <label>任務內容</label><input id="taskTitle" placeholder="例如：整理 MiniAI 本機版" />
     <label>到期日，可選</label><input id="taskDue" type="date" />
     <label>提醒時間，可選</label><input id="taskReminder" type="datetime-local" />
     <label>優先級</label><select id="taskPriority"><option value="medium">中</option><option value="high">高</option><option value="low">低</option></select>
@@ -199,7 +225,7 @@
   <h2>新增知識</h2>
   <div class="form-grid">
     <label>標題 / 問題</label><input id="learnQuestion" placeholder="例如：我的常用工具是什麼" />
-    <label>內容 / 答案</label><textarea id="learnAnswer" placeholder="例如：你常用 ChatGPT 作為主要整理與輸出平台。"></textarea>
+    <label>內容 / 答案</label><textarea id="learnAnswer" placeholder="例如：MiniAI Local 是完全本機版。"></textarea>
     <label>標籤，可選</label><input id="learnTags" placeholder="例如：個人設定, 工具, AI" />
   </div>
   <div class="modal-actions"><button id="cancelLearnBtn">取消</button><button class="primary" id="saveLearnBtn">儲存</button></div>
@@ -235,22 +261,21 @@
 <input type="file" id="backupFile" accept="application/json,.json" hidden />
 
 <script>
-const DB_NAME="MiniAI_PWA_v7",DB_VERSION=1,KNOWLEDGE="knowledge",CHATS="chats",TASKS="tasks";
+const DB_NAME="MiniAI_Local_v8",DB_VERSION=1,KNOWLEDGE="knowledge",CHATS="chats",TASKS="tasks";
 const taskLabels={general:"一般回答",summary:"摘要重點",todo:"轉成待辦",study:"學習卡片",sop:"整理成 SOP",compare:"比較與取捨",assistant:"私人助理建議"};
 const priorityLabels={high:"高",medium:"中",low:"低"};
 const defaultKnowledge=[
- {type:"qa",title:"你好",content:"你好，我是 MiniAI PWA v7。現在我有本機知識庫、任務管理、通知、行事曆匯出、每日整理，並可橋接大型模型。",tags:["基本"]},
- {type:"qa",title:"什麼是任務通知",content:"任務通知是本機提醒。App 開著或重新開啟時會檢查提醒時間、今日到期與逾期任務。",tags:["通知","任務"]},
- {type:"qa",title:"什麼是行事曆匯出",content:"行事曆匯出會把未完成且有到期日的任務打包成 .ics 檔，可匯入行事曆工具。",tags:["行事曆","任務"]},
- {type:"qa",title:"資料會同步到雲端嗎",content:"不會。本機知識、聊天與任務都存在這台裝置的 IndexedDB。只有混合模式會把你的問題與少數相關片段送到後端模型。",tags:["隱私","安全"]}
+ {type:"qa",title:"你好",content:"你好，我是 MiniAI Local v8。這是完全本機版，不需要 API Key，也不會連接大型模型。",tags:["基本"]},
+ {type:"qa",title:"這版會連網嗎",content:"不會呼叫大型模型後端。PWA 安裝與離線快取需要網站部署，但知識、任務、聊天都存在本機 IndexedDB。",tags:["隱私","本機"]},
+ {type:"qa",title:"可以做什麼",content:"可以新增知識、匯入文字文件、搜尋本機知識、管理任務、匯出行事曆、做本機每日整理與備份。",tags:["使用說明"]},
+ {type:"qa",title:"如何新增知識",content:"可以按新增知識，也可以輸入：學習：問題 => 答案。",tags:["使用說明"]}
 ];
-
-const el={chat:q("#chat"),chatForm:q("#chatForm"),userInput:q("#userInput"),installBtn:q("#installBtn"),newChatBtn:q("#newChatBtn"),briefBtn:q("#briefBtn"),taskBtn:q("#taskBtn"),addTaskBtn:q("#addTaskBtn"),notifyBtn:q("#notifyBtn"),exportIcsBtn:q("#exportIcsBtn"),historyBtn:q("#historyBtn"),learnBtn:q("#learnBtn"),importDocBtn:q("#importDocBtn"),knowledgeBtn:q("#knowledgeBtn"),exportBtn:q("#exportBtn"),importBackupBtn:q("#importBackupBtn"),settingsBtn:q("#settingsBtn"),resetBtn:q("#resetBtn"),taskMode:q("#taskMode"),answerEngine:q("#answerEngine"),settingsDialog:q("#settingsDialog"),apiUrl:q("#apiUrl"),contextLimit:q("#contextLimit"),briefStyle:q("#briefStyle"),reminderInterval:q("#reminderInterval"),closeSettingsBtn:q("#closeSettingsBtn"),saveSettingsBtn:q("#saveSettingsBtn"),taskDialog:q("#taskDialog"),taskFilter:q("#taskFilter"),taskStatusFilter:q("#taskStatusFilter"),taskSort:q("#taskSort"),taskCount:q("#taskCount"),taskList:q("#taskList"),closeTaskBtn:q("#closeTaskBtn"),addTaskDialog:q("#addTaskDialog"),taskTitle:q("#taskTitle"),taskDue:q("#taskDue"),taskReminder:q("#taskReminder"),taskPriority:q("#taskPriority"),taskCategory:q("#taskCategory"),taskNote:q("#taskNote"),cancelTaskBtn:q("#cancelTaskBtn"),saveTaskBtn:q("#saveTaskBtn"),learnDialog:q("#learnDialog"),learnQuestion:q("#learnQuestion"),learnAnswer:q("#learnAnswer"),learnTags:q("#learnTags"),cancelLearnBtn:q("#cancelLearnBtn"),saveLearnBtn:q("#saveLearnBtn"),docDialog:q("#docDialog"),chooseDocBtn:q("#chooseDocBtn"),docFile:q("#docFile"),docTags:q("#docTags"),chunkSize:q("#chunkSize"),docImportStatus:q("#docImportStatus"),closeDocBtn:q("#closeDocBtn"),knowledgeDialog:q("#knowledgeDialog"),knowledgeFilter:q("#knowledgeFilter"),sortMode:q("#sortMode"),knowledgeCount:q("#knowledgeCount"),knowledgeList:q("#knowledgeList"),closeKnowledgeBtn:q("#closeKnowledgeBtn"),historyDialog:q("#historyDialog"),historyFilter:q("#historyFilter"),historySort:q("#historySort"),historyCount:q("#historyCount"),historyList:q("#historyList"),closeHistoryBtn:q("#closeHistoryBtn"),backupFile:q("#backupFile"),statusBadge:q("#statusBadge"),statKnowledge:q("#statKnowledge"),statTasks:q("#statTasks"),statDueToday:q("#statDueToday"),statNotify:q("#statNotify"),statEngine:q("#statEngine")};
+const el={chat:q("#chat"),chatForm:q("#chatForm"),userInput:q("#userInput"),installBtn:q("#installBtn"),newChatBtn:q("#newChatBtn"),briefBtn:q("#briefBtn"),taskBtn:q("#taskBtn"),addTaskBtn:q("#addTaskBtn"),notifyBtn:q("#notifyBtn"),exportIcsBtn:q("#exportIcsBtn"),historyBtn:q("#historyBtn"),learnBtn:q("#learnBtn"),importDocBtn:q("#importDocBtn"),knowledgeBtn:q("#knowledgeBtn"),exportBtn:q("#exportBtn"),importBackupBtn:q("#importBackupBtn"),settingsBtn:q("#settingsBtn"),resetBtn:q("#resetBtn"),taskMode:q("#taskMode"),settingsDialog:q("#settingsDialog"),briefStyle:q("#briefStyle"),reminderInterval:q("#reminderInterval"),closeSettingsBtn:q("#closeSettingsBtn"),saveSettingsBtn:q("#saveSettingsBtn"),taskDialog:q("#taskDialog"),taskFilter:q("#taskFilter"),taskStatusFilter:q("#taskStatusFilter"),taskSort:q("#taskSort"),taskCount:q("#taskCount"),taskList:q("#taskList"),closeTaskBtn:q("#closeTaskBtn"),addTaskDialog:q("#addTaskDialog"),taskTitle:q("#taskTitle"),taskDue:q("#taskDue"),taskReminder:q("#taskReminder"),taskPriority:q("#taskPriority"),taskCategory:q("#taskCategory"),taskNote:q("#taskNote"),cancelTaskBtn:q("#cancelTaskBtn"),saveTaskBtn:q("#saveTaskBtn"),learnDialog:q("#learnDialog"),learnQuestion:q("#learnQuestion"),learnAnswer:q("#learnAnswer"),learnTags:q("#learnTags"),cancelLearnBtn:q("#cancelLearnBtn"),saveLearnBtn:q("#saveLearnBtn"),docDialog:q("#docDialog"),chooseDocBtn:q("#chooseDocBtn"),docFile:q("#docFile"),docTags:q("#docTags"),chunkSize:q("#chunkSize"),docImportStatus:q("#docImportStatus"),closeDocBtn:q("#closeDocBtn"),knowledgeDialog:q("#knowledgeDialog"),knowledgeFilter:q("#knowledgeFilter"),sortMode:q("#sortMode"),knowledgeCount:q("#knowledgeCount"),knowledgeList:q("#knowledgeList"),closeKnowledgeBtn:q("#closeKnowledgeBtn"),historyDialog:q("#historyDialog"),historyFilter:q("#historyFilter"),historySort:q("#historySort"),historyCount:q("#historyCount"),historyList:q("#historyList"),closeHistoryBtn:q("#closeHistoryBtn"),backupFile:q("#backupFile"),statusBadge:q("#statusBadge"),statKnowledge:q("#statKnowledge"),statTasks:q("#statTasks"),statDueToday:q("#statDueToday"),statNotify:q("#statNotify")};
 let db,deferredPrompt=null,reminderTimer=null,notifiedTaskIds=new Set();
 function q(s){return document.querySelector(s)}
-function getSettings(){return{apiUrl:localStorage.getItem("miniai_v7_api_url")||"/api/chat",contextLimit:Number(localStorage.getItem("miniai_v7_context_limit")||5),taskMode:localStorage.getItem("miniai_v7_task_mode")||"assistant",answerEngine:localStorage.getItem("miniai_v7_answer_engine")||"hybrid",briefStyle:localStorage.getItem("miniai_v7_brief_style")||"action",reminderInterval:Number(localStorage.getItem("miniai_v7_reminder_interval")||30)}}
-function applySettingsToUI(){const s=getSettings();el.apiUrl.value=s.apiUrl;el.contextLimit.value=String(s.contextLimit);el.taskMode.value=s.taskMode;el.answerEngine.value=s.answerEngine;el.briefStyle.value=s.briefStyle;el.reminderInterval.value=String(s.reminderInterval)}
-function saveSettingsFromUI(){localStorage.setItem("miniai_v7_api_url",el.apiUrl.value.trim()||"/api/chat");localStorage.setItem("miniai_v7_context_limit",el.contextLimit.value);localStorage.setItem("miniai_v7_task_mode",el.taskMode.value);localStorage.setItem("miniai_v7_answer_engine",el.answerEngine.value);localStorage.setItem("miniai_v7_brief_style",el.briefStyle.value);localStorage.setItem("miniai_v7_reminder_interval",el.reminderInterval.value)}
+function getSettings(){return{taskMode:localStorage.getItem("miniai_local_v8_task_mode")||"assistant",briefStyle:localStorage.getItem("miniai_local_v8_brief_style")||"action",reminderInterval:Number(localStorage.getItem("miniai_local_v8_reminder_interval")||30)}}
+function applySettingsToUI(){const s=getSettings();el.taskMode.value=s.taskMode;el.briefStyle.value=s.briefStyle;el.reminderInterval.value=String(s.reminderInterval)}
+function saveSettingsFromUI(){localStorage.setItem("miniai_local_v8_task_mode",el.taskMode.value);localStorage.setItem("miniai_local_v8_brief_style",el.briefStyle.value);localStorage.setItem("miniai_local_v8_reminder_interval",el.reminderInterval.value)}
 function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains(KNOWLEDGE)){const s=d.createObjectStore(KNOWLEDGE,{keyPath:"id",autoIncrement:true});s.createIndex("createdAt","createdAt");s.createIndex("type","type")}if(!d.objectStoreNames.contains(CHATS)){const s=d.createObjectStore(CHATS,{keyPath:"id",autoIncrement:true});s.createIndex("createdAt","createdAt");s.createIndex("taskMode","taskMode")}if(!d.objectStoreNames.contains(TASKS)){const s=d.createObjectStore(TASKS,{keyPath:"id",autoIncrement:true});s.createIndex("createdAt","createdAt");s.createIndex("dueDate","dueDate");s.createIndex("status","status");s.createIndex("priority","priority");s.createIndex("reminderAt","reminderAt")}};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 function store(name,mode="readonly"){return db.transaction(name,mode).objectStore(name)}
 function getAll(name){return new Promise((res,rej)=>{const r=store(name).getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error)})}
@@ -272,33 +297,61 @@ function excerpt(t,max=520){const c=cleanText(t);return c.length<=max?c:c.slice(
 function itemTitle(item){return item.type==="doc_chunk"?`${item.sourceName||item.title||"文件"}${Number.isInteger(item.chunkIndex)?" #"+(item.chunkIndex+1):""}`:item.title||"未命名知識"}
 function todayISO(){return new Date().toISOString().slice(0,10)}
 function isDueToday(d){return d&&d===todayISO()}function isOverdue(d){return d&&d<todayISO()}
-function localAnswer(matches){if(!matches.length||matches[0].score<.22)return{answer:"我在本機知識庫裡找不到足夠相關的內容。你可以匯入文件，或新增知識。",sources:[]};const good=matches.filter(m=>m.score>=.22).slice(0,3);return{answer:["我在本機找到這些相關內容：","",...good.map((m,i)=>`${i+1}. ${itemTitle(m.item)}\n${excerpt(m.item.content,380)}`)].join("\n"),sources:good.map(m=>m.item)}}
-async function getAssistantSnapshot(){const tasks=await getAll(TASKS),chats=await getAll(CHATS),knowledge=await getAll(KNOWLEDGE),openTasks=tasks.filter(t=>t.status!=="done"),dueToday=openTasks.filter(t=>isDueToday(t.dueDate)),overdue=openTasks.filter(t=>isOverdue(t.dueDate));return{tasks,chats,knowledge,openTasks,dueToday,overdue,recentChats:chats.sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt))).slice(0,8)}}
-async function callLLM(message,matches,extra={}){const s=getSettings(),context=matches.filter(m=>m.score>=.18).slice(0,s.contextLimit).map(m=>({title:itemTitle(m.item),type:m.item.type,sourceName:m.item.sourceName,content:excerpt(m.item.content,1000),score:m.score}));const r=await fetch(s.apiUrl,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message,context,taskMode:s.taskMode,taskLabel:taskLabels[s.taskMode]||"一般回答",assistantSnapshot:extra.assistantSnapshot||null,briefStyle:s.briefStyle})});if(!r.ok){const text=await r.text();throw new Error(text||"API error")}return await r.json()}
-async function reply(input){const text=input.trim();if(!text)return{answer:"你還沒輸入內容。",sources:[]};if(text.startsWith("學習：")||text.startsWith("學習:")){const c=text.replace(/^學習[:：]/,"").trim();if(!c.includes("=>"))return{answer:"格式不對。請用：學習：問題 => 答案",sources:[]};const [question,...parts]=c.split("=>"),answer=parts.join("=>");if(!question.trim()||!answer.trim())return{answer:"問題和答案都不能空白。",sources:[]};await addKnowledge({type:"qa",title:question,content:answer,tags:["使用者新增"]});await refreshStats();return{answer:"我學會了。這筆知識已儲存在本機。",sources:[]}}const s=getSettings(),matches=await findLocal(text,s.contextLimit);if(s.answerEngine==="local")return localAnswer(matches);try{const snapshot=s.taskMode==="assistant"?await getAssistantSnapshot():null;const data=await callLLM(text,matches,{assistantSnapshot:snapshot});return{answer:data.reply||"大型模型沒有回傳文字。",sources:matches.map(m=>m.item).slice(0,s.contextLimit)}}catch(error){const fallback=localAnswer(matches);fallback.answer="大型模型連線失敗，已改用本機回答。\n\n"+fallback.answer+"\n\n錯誤："+error.message;return fallback}}
-async function generateDailyBrief(){const snapshot=await getAssistantSnapshot(),openTasks=snapshot.openTasks,due=snapshot.dueToday,over=snapshot.overdue;const local=["每日整理","",`未完成任務：${openTasks.length} 件`,`今日到期：${due.length} 件`,`已逾期：${over.length} 件`,"","今日優先看：",...[...over,...due].slice(0,8).map((t,i)=>`${i+1}. ${t.title}${t.dueDate?`｜${t.dueDate}`:""}｜優先級：${priorityLabels[t.priority]||t.priority}`)].join("\n");if(getSettings().answerEngine==="local")return local;try{const data=await callLLM("請根據我的任務與最近紀錄，產生今日整理。包含今日重點、優先事項、風險與下一步。",[],{assistantSnapshot:snapshot});return data.reply||local}catch(error){return local+"\n\n大型模型連線失敗，以上為本機整理。\n錯誤："+error.message}}
+function summarizeText(text, mode){
+  const lines = cleanText(text).split(/\n+/).map(s=>s.trim()).filter(Boolean);
+  const sentences = cleanText(text).split(/[。！？!?]\s*/).map(s=>s.trim()).filter(Boolean);
+  const picks = (sentences.length?sentences:lines).slice(0,7);
+  if(mode==="summary") return ["本機摘要：","",...picks.map((s,i)=>`${i+1}. ${s}`)].join("\n");
+  if(mode==="todo") return ["本機待辦：","",...picks.map((s,i)=>`☐ ${s}`)].join("\n");
+  if(mode==="sop") return ["本機 SOP 草稿：","","目的：整理輸入內容為可執行流程。","","步驟：",...picks.map((s,i)=>`${i+1}. ${s}`),"","檢查：","☐ 是否有下一步","☐ 是否有負責人","☐ 是否有期限"].join("\n");
+  if(mode==="study") return ["本機學習卡片：","",...picks.map((s,i)=>`Q${i+1}：這段重點是什麼？\nA${i+1}：${s}`).join("\n\n")].join("\n");
+  if(mode==="compare") return ["本機比較提示：","",...picks.map((s,i)=>`選項 ${i+1}：${s}\n優點：待補\n缺點：待補`).join("\n\n")].join("\n");
+  return null;
+}
+function localAnswer(query,matches){
+  const mode=getSettings().taskMode;
+  const transformed=summarizeText(query,mode);
+  if(transformed && query.length>15) return {answer:transformed,sources:[]};
+  if(!matches.length||matches[0].score<.22)return{answer:"我在本機知識庫裡找不到足夠相關的內容。你可以匯入文件，或新增知識。\n\n完全本機版不會呼叫大型模型，所以回答能力會比雲端模型簡單。",sources:[]};
+  const good=matches.filter(m=>m.score>=.22).slice(0,3);
+  return{answer:["我在本機找到這些相關內容：","",...good.map((m,i)=>`${i+1}. ${itemTitle(m.item)}\n${excerpt(m.item.content,380)}`)].join("\n"),sources:good.map(m=>m.item)}
+}
+async function reply(input){
+  const text=input.trim(); if(!text)return{answer:"你還沒輸入內容。",sources:[]};
+  if(text.startsWith("學習：")||text.startsWith("學習:")){
+    const c=text.replace(/^學習[:：]/,"").trim(); if(!c.includes("=>"))return{answer:"格式不對。請用：學習：問題 => 答案",sources:[]};
+    const [question,...parts]=c.split("=>"),answer=parts.join("=>"); if(!question.trim()||!answer.trim())return{answer:"問題和答案都不能空白。",sources:[]};
+    await addKnowledge({type:"qa",title:question,content:answer,tags:["使用者新增"]}); await refreshStats(); return{answer:"我學會了。這筆知識已儲存在本機。",sources:[]}
+  }
+  const matches=await findLocal(text,5); return localAnswer(text,matches);
+}
+async function generateDailyBrief(){
+  const tasks=await getAll(TASKS),chats=await getAll(CHATS),open=tasks.filter(t=>t.status!=="done"),due=open.filter(t=>isDueToday(t.dueDate)),over=open.filter(t=>isOverdue(t.dueDate));
+  const priority=[...over,...due,...open.filter(t=>!isDueToday(t.dueDate)&&!isOverdue(t.dueDate))].slice(0,8);
+  return ["每日整理｜本機版","",`未完成任務：${open.length} 件`,`今日到期：${due.length} 件`,`已逾期：${over.length} 件`,`聊天紀錄：${chats.length} 筆`,"","建議優先處理：",...(priority.length?priority.map((t,i)=>`${i+1}. ${t.title}${t.dueDate?`｜${t.dueDate}`:""}｜優先級：${priorityLabels[t.priority]||t.priority}`):["目前沒有未完成任務。"]),"","提醒：這是本機規則整理，不會呼叫大型模型。"].join("\n")
+}
 function addMessage(role,text,sources=[]){const msg=document.createElement("div");msg.className=`msg ${role}`;msg.textContent=text;if(role==="ai"&&sources.length){const box=document.createElement("div");box.className="sources";box.textContent="參考知識：";sources.slice(0,5).forEach(source=>{const pill=document.createElement("span");pill.className="source-pill";pill.textContent=itemTitle(source);box.appendChild(pill)});msg.appendChild(box)}el.chat.appendChild(msg);requestAnimationFrame(()=>window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"}))}
-async function saveChat(userText,aiText,sources=[]){const s=getSettings();await addRecord(CHATS,{userText,aiText,taskMode:s.taskMode,answerEngine:s.answerEngine,sourceTitles:sources.map(itemTitle).slice(0,5)})}
-async function refreshStats(){const knowledge=await getAll(KNOWLEDGE),chats=await getAll(CHATS),tasks=await getAll(TASKS),openTasks=tasks.filter(t=>t.status!=="done"),dueToday=openTasks.filter(t=>isDueToday(t.dueDate)).length,s=getSettings();el.statKnowledge.textContent=knowledge.length;el.statTasks.textContent=openTasks.length;el.statDueToday.textContent=dueToday;el.statNotify.textContent=("Notification"in window)?Notification.permission:"不支援";el.statEngine.textContent=s.answerEngine==="hybrid"?"混合":"本機";el.statusBadge.textContent=`${el.statEngine.textContent}｜任務 ${openTasks.length}`}
+async function saveChat(userText,aiText,sources=[]){await addRecord(CHATS,{userText,aiText,taskMode:getSettings().taskMode,answerEngine:"local",sourceTitles:sources.map(itemTitle).slice(0,5)})}
+async function refreshStats(){const knowledge=await getAll(KNOWLEDGE),chats=await getAll(CHATS),tasks=await getAll(TASKS),open=tasks.filter(t=>t.status!=="done"),dueToday=open.filter(t=>isDueToday(t.dueDate)).length;el.statKnowledge.textContent=knowledge.length;el.statTasks.textContent=open.length;el.statDueToday.textContent=dueToday;el.statNotify.textContent=("Notification"in window)?Notification.permission:"不支援";el.statusBadge.textContent=`本機｜知識 ${knowledge.length}｜任務 ${open.length}`}
 function escapeHTML(text){return String(text).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
 function renderKnowledge(list){el.knowledgeList.innerHTML="";el.knowledgeCount.textContent=`顯示 ${list.length} 筆知識。`;if(!list.length){el.knowledgeList.innerHTML='<div class="empty">沒有符合的知識。</div>';return}list.forEach(item=>{const div=document.createElement("div");div.className="item";div.innerHTML=`<div class="item-head"><div><div class="item-title">${escapeHTML(itemTitle(item))}</div><div class="small">${new Date(item.createdAt||Date.now()).toLocaleString()}</div></div><button class="danger" data-delete="${item.id}">刪除</button></div><div>${escapeHTML(excerpt(item.content,520))}</div><div class="tag-row"><span class="tag mode">${item.type==="doc_chunk"?"文件片段":"知識"}</span>${(item.tags||[]).map(t=>`<span class="tag">${escapeHTML(t)}</span>`).join("")}</div>`;div.querySelector("[data-delete]").onclick=async()=>{if(confirm("確定刪除這筆知識嗎？")){await deleteRecord(KNOWLEDGE,item.id);await openKnowledgeManager();await refreshStats()}};el.knowledgeList.appendChild(div)})}
 async function openKnowledgeManager(){let data=await getAll(KNOWLEDGE);const k=el.knowledgeFilter.value.trim().toLowerCase();if(k)data=data.filter(item=>[item.title,item.content,item.sourceName,...(item.tags||[])].join(" ").toLowerCase().includes(k));if(el.sortMode.value==="newest")data.sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));else if(el.sortMode.value==="oldest")data.sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt)));else data.sort((a,b)=>String(a.type).localeCompare(String(b.type)));renderKnowledge(data)}
-function renderHistory(list){el.historyList.innerHTML="";el.historyCount.textContent=`顯示 ${list.length} 筆聊天紀錄。`;if(!list.length){el.historyList.innerHTML='<div class="empty">沒有符合的聊天紀錄。</div>';return}list.forEach(chat=>{const div=document.createElement("div");div.className="item";div.innerHTML=`<div class="item-head"><div><div class="item-title">${escapeHTML(excerpt(chat.userText,80))}</div><div class="small">${new Date(chat.createdAt||Date.now()).toLocaleString()}</div></div><button class="danger" data-delete="${chat.id}">刪除</button></div><div class="small">模式：${escapeHTML(taskLabels[chat.taskMode]||chat.taskMode||"一般")}｜引擎：${escapeHTML(chat.answerEngine||"")}</div><div style="margin-top:8px">${escapeHTML(excerpt(chat.aiText,520))}</div><div class="tag-row">${(chat.sourceTitles||[]).map(t=>`<span class="tag">${escapeHTML(t)}</span>`).join("")}</div>`;div.onclick=e=>{if(e.target.matches("button"))return;addMessage("user",chat.userText);addMessage("ai",chat.aiText);el.historyDialog.close()};div.querySelector("[data-delete]").onclick=async()=>{if(confirm("確定刪除這筆聊天紀錄嗎？")){await deleteRecord(CHATS,chat.id);await openHistory();await refreshStats()}};el.historyList.appendChild(div)})}
-async function openHistory(){let data=await getAll(CHATS);const k=el.historyFilter.value.trim().toLowerCase();if(k)data=data.filter(chat=>[chat.userText,chat.aiText,chat.taskMode,chat.answerEngine,...(chat.sourceTitles||[])].join(" ").toLowerCase().includes(k));if(el.historySort.value==="newest")data.sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));else data.sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt)));renderHistory(data)}
+function renderHistory(list){el.historyList.innerHTML="";el.historyCount.textContent=`顯示 ${list.length} 筆聊天紀錄。`;if(!list.length){el.historyList.innerHTML='<div class="empty">沒有符合的聊天紀錄。</div>';return}list.forEach(chat=>{const div=document.createElement("div");div.className="item";div.innerHTML=`<div class="item-head"><div><div class="item-title">${escapeHTML(excerpt(chat.userText,80))}</div><div class="small">${new Date(chat.createdAt||Date.now()).toLocaleString()}</div></div><button class="danger" data-delete="${chat.id}">刪除</button></div><div class="small">模式：${escapeHTML(taskLabels[chat.taskMode]||chat.taskMode||"一般")}｜本機</div><div style="margin-top:8px">${escapeHTML(excerpt(chat.aiText,520))}</div><div class="tag-row">${(chat.sourceTitles||[]).map(t=>`<span class="tag">${escapeHTML(t)}</span>`).join("")}</div>`;div.onclick=e=>{if(e.target.matches("button"))return;addMessage("user",chat.userText);addMessage("ai",chat.aiText);el.historyDialog.close()};div.querySelector("[data-delete]").onclick=async()=>{if(confirm("確定刪除這筆聊天紀錄嗎？")){await deleteRecord(CHATS,chat.id);await openHistory();await refreshStats()}};el.historyList.appendChild(div)})}
+async function openHistory(){let data=await getAll(CHATS);const k=el.historyFilter.value.trim().toLowerCase();if(k)data=data.filter(chat=>[chat.userText,chat.aiText,chat.taskMode,...(chat.sourceTitles||[])].join(" ").toLowerCase().includes(k));if(el.historySort.value==="newest")data.sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));else data.sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt)));renderHistory(data)}
 function renderTasks(list){el.taskList.innerHTML="";el.taskCount.textContent=`顯示 ${list.length} 件任務。`;if(!list.length){el.taskList.innerHTML='<div class="empty">沒有任務。</div>';return}list.forEach(task=>{const div=document.createElement("div");div.className=`item ${task.status==="done"?"done":""}`;const dueClass=task.status==="done"?"ok":(isOverdue(task.dueDate)?"warn":(isDueToday(task.dueDate)?"warn":"mode"));div.innerHTML=`<div class="item-head"><div><div class="item-title">${task.status==="done"?"✓ ":""}${escapeHTML(task.title)}</div><div class="small">${escapeHTML(task.note||"")}</div></div><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="ok" data-toggle="${task.id}">${task.status==="done"?"恢復":"完成"}</button><button class="danger" data-delete="${task.id}">刪除</button></div></div><div class="tag-row"><span class="tag ${dueClass}">${task.dueDate?escapeHTML(task.dueDate):"無到期日"}</span>${task.reminderAt?`<span class="tag warn">提醒：${escapeHTML(task.reminderAt.replace("T"," "))}</span>`:""}<span class="tag mode">優先級：${escapeHTML(priorityLabels[task.priority]||task.priority)}</span>${task.category?`<span class="tag">${escapeHTML(task.category)}</span>`:""}</div>`;div.querySelector("[data-toggle]").onclick=async()=>{task.status=task.status==="done"?"open":"done";await putRecord(TASKS,task);await openTasks();await refreshStats()};div.querySelector("[data-delete]").onclick=async()=>{if(confirm("確定刪除這件任務嗎？")){await deleteRecord(TASKS,task.id);await openTasks();await refreshStats()}};el.taskList.appendChild(div)})}
 async function openTasks(){let data=await getAll(TASKS);const k=el.taskFilter.value.trim().toLowerCase(),status=el.taskStatusFilter.value;if(k)data=data.filter(task=>[task.title,task.note,task.category,task.priority,task.dueDate,task.reminderAt].join(" ").toLowerCase().includes(k));if(status!=="all")data=data.filter(task=>status==="done"?task.status==="done":task.status!=="done");if(el.taskSort.value==="due")data.sort((a,b)=>(a.dueDate||"9999-99-99").localeCompare(b.dueDate||"9999-99-99"));else if(el.taskSort.value==="priority"){const order={high:0,medium:1,low:2};data.sort((a,b)=>(order[a.priority]??9)-(order[b.priority]??9))}else data.sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));renderTasks(data)}
 async function importDocs(files){if(!files||!files.length)return;const tags=normalizeTags(el.docTags.value||["文件"]),size=Number(el.chunkSize.value||800);let added=0;for(const file of files){el.docImportStatus.textContent=`處理中：${file.name}`;try{const text=await file.text();if(file.name.toLowerCase().endsWith(".json")){const parsed=JSON.parse(text),rows=Array.isArray(parsed)?parsed:(parsed.knowledge||[]);if(Array.isArray(rows)&&rows.length){for(const row of rows){if(!row.title&&!row.question&&!row.content&&!row.answer)continue;await addKnowledge({type:row.type||(row.content?"doc_chunk":"qa"),title:row.title||row.question||row.sourceName||file.name,content:row.content||row.answer||"",tags:[...normalizeTags(row.tags||[]),...tags],sourceName:row.sourceName||file.name,chunkIndex:Number.isInteger(row.chunkIndex)?row.chunkIndex:null});added++}}}else{const chunks=splitChunks(text,size);for(let i=0;i<chunks.length;i++){await addKnowledge({type:"doc_chunk",title:file.name,content:chunks[i],tags,sourceName:file.name,chunkIndex:i});added++}}}catch(error){addMessage("system",`匯入失敗：${file.name}`)}}el.docImportStatus.textContent=`匯入完成：新增 ${added} 筆知識。`;await refreshStats();addMessage("system",`文件匯入完成：新增 ${added} 筆本機知識。`)}
 function showNotification(title,body){if(!("Notification"in window)||Notification.permission!=="granted")return;try{new Notification(title,{body,tag:"miniai-task"})}catch(e){}}
-async function checkDueTasks(silent=false){const tasks=await getAll(TASKS),now=new Date();const due=tasks.filter(t=>t.status!=="done"&&(isDueToday(t.dueDate)||isOverdue(t.dueDate)));const reminders=tasks.filter(t=>t.status!=="done"&&t.reminderAt&&new Date(t.reminderAt)<=now&&!notifiedTaskIds.has(t.id));if(due.length&&!silent){addMessage("system",`任務提醒：你有 ${due.length} 件任務到期或逾期。`)}for(const task of reminders){notifiedTaskIds.add(task.id);showNotification("MiniAI 任務提醒",task.title);if(!silent)addMessage("system",`提醒：${task.title}`)}await refreshStats()}
+async function checkDueTasks(silent=false){const tasks=await getAll(TASKS),now=new Date();const due=tasks.filter(t=>t.status!=="done"&&(isDueToday(t.dueDate)||isOverdue(t.dueDate)));const reminders=tasks.filter(t=>t.status!=="done"&&t.reminderAt&&new Date(t.reminderAt)<=now&&!notifiedTaskIds.has(t.id));if(due.length&&!silent)addMessage("system",`任務提醒：你有 ${due.length} 件任務到期或逾期。`);for(const task of reminders){notifiedTaskIds.add(task.id);showNotification("MiniAI 任務提醒",task.title);if(!silent)addMessage("system",`提醒：${task.title}`)}await refreshStats()}
 function restartReminderTimer(){if(reminderTimer)clearInterval(reminderTimer);const mins=getSettings().reminderInterval;reminderTimer=setInterval(()=>checkDueTasks(true),mins*60*1000)}
 function formatIcsDate(date){return date.replaceAll("-","")}
 function escapeIcs(text){return String(text||"").replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\n/g,"\\n")}
-async function exportTasksIcs(){const tasks=(await getAll(TASKS)).filter(t=>t.status!=="done"&&t.dueDate);if(!tasks.length){alert("沒有可匯出的未完成到期任務。");return}const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//MiniAI PWA v7//Tasks//ZH-TW"];for(const t of tasks){const uid=`miniai-${t.id}-${location.hostname||"local"}`;lines.push("BEGIN:VEVENT",`UID:${uid}`,`DTSTAMP:${new Date().toISOString().replace(/[-:]/g,"").split(".")[0]}Z`,`DTSTART;VALUE=DATE:${formatIcsDate(t.dueDate)}`,`SUMMARY:${escapeIcs(t.title)}`,`DESCRIPTION:${escapeIcs([t.note,t.category?`分類：${t.category}`:"",`優先級：${priorityLabels[t.priority]||t.priority}`].filter(Boolean).join("\\n"))}`,"END:VEVENT")}lines.push("END:VCALENDAR");const blob=new Blob([lines.join("\r\n")],{type:"text/calendar"});const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=`miniai-tasks-${todayISO()}.ics`;a.click();URL.revokeObjectURL(url)}
-el.chatForm.onsubmit=async event=>{event.preventDefault();const text=el.userInput.value.trim();if(!text)return;saveSettingsFromUI();await refreshStats();addMessage("user",text);el.userInput.value="";const wait=document.createElement("div");wait.className="msg ai";wait.textContent=getSettings().answerEngine==="hybrid"?"查本機知識，呼叫大型模型中...":"搜尋本機知識中...";el.chat.appendChild(wait);const result=await reply(text);wait.remove();addMessage("ai",result.answer,result.sources);await saveChat(text,result.answer,result.sources);await refreshStats()};
+async function exportTasksIcs(){const tasks=(await getAll(TASKS)).filter(t=>t.status!=="done"&&t.dueDate);if(!tasks.length){alert("沒有可匯出的未完成到期任務。");return}const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//MiniAI Local v8//Tasks//ZH-TW"];for(const t of tasks){const uid=`miniai-local-${t.id}-${location.hostname||"local"}`;lines.push("BEGIN:VEVENT",`UID:${uid}`,`DTSTAMP:${new Date().toISOString().replace(/[-:]/g,"").split(".")[0]}Z`,`DTSTART;VALUE=DATE:${formatIcsDate(t.dueDate)}`,`SUMMARY:${escapeIcs(t.title)}`,`DESCRIPTION:${escapeIcs([t.note,t.category?`分類：${t.category}`:"",`優先級：${priorityLabels[t.priority]||t.priority}`].filter(Boolean).join("\\n"))}`,"END:VEVENT")}lines.push("END:VCALENDAR");const blob=new Blob([lines.join("\r\n")],{type:"text/calendar"});const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=`miniai-local-tasks-${todayISO()}.ics`;a.click();URL.revokeObjectURL(url)}
+el.chatForm.onsubmit=async event=>{event.preventDefault();const text=el.userInput.value.trim();if(!text)return;saveSettingsFromUI();await refreshStats();addMessage("user",text);el.userInput.value="";const result=await reply(text);addMessage("ai",result.answer,result.sources);await saveChat(text,result.answer,result.sources);await refreshStats()};
 document.querySelectorAll("[data-quick]").forEach(btn=>{btn.onclick=()=>{const text=btn.getAttribute("data-quick");el.userInput.value=text+(text.endsWith("：")?"\n":"");el.userInput.focus()}});
-el.taskMode.onchange=async()=>{saveSettingsFromUI();await refreshStats()};el.answerEngine.onchange=async()=>{saveSettingsFromUI();await refreshStats()};
-el.newChatBtn.onclick=()=>{el.chat.innerHTML="";addMessage("ai","新對話已開始。選一個工作模式，然後把內容丟給我。")};
-el.briefBtn.onclick=async()=>{saveSettingsFromUI();const wait=document.createElement("div");wait.className="msg ai";wait.textContent="正在整理今日狀態...";el.chat.appendChild(wait);const brief=await generateDailyBrief();wait.remove();addMessage("ai",brief);await saveChat("每日整理",brief,[]);await refreshStats()};
+el.taskMode.onchange=async()=>{saveSettingsFromUI();await refreshStats()};
+el.newChatBtn.onclick=()=>{el.chat.innerHTML="";addMessage("ai","新對話已開始。這是完全本機版，可搜尋知識、整理文字與管理任務。")};
+el.briefBtn.onclick=async()=>{saveSettingsFromUI();const brief=await generateDailyBrief();addMessage("ai",brief);await saveChat("每日整理",brief,[]);await refreshStats()};
 el.taskBtn.onclick=async()=>{await openTasks();el.taskDialog.showModal()};el.taskFilter.oninput=openTasks;el.taskStatusFilter.onchange=openTasks;el.taskSort.onchange=openTasks;el.closeTaskBtn.onclick=()=>el.taskDialog.close();
 el.addTaskBtn.onclick=()=>{el.taskTitle.value="";el.taskDue.value="";el.taskReminder.value="";el.taskPriority.value="medium";el.taskCategory.value="";el.taskNote.value="";el.addTaskDialog.showModal()};el.cancelTaskBtn.onclick=()=>el.addTaskDialog.close();el.saveTaskBtn.onclick=async()=>{if(!el.taskTitle.value.trim()){alert("任務內容不能空白。");return}await addTask({title:el.taskTitle.value,dueDate:el.taskDue.value,reminderAt:el.taskReminder.value,priority:el.taskPriority.value,category:el.taskCategory.value,note:el.taskNote.value});await refreshStats();el.addTaskDialog.close();addMessage("system","任務已新增。")};
 el.notifyBtn.onclick=async()=>{if(!("Notification"in window)){alert("此瀏覽器不支援通知。");return}const p=await Notification.requestPermission();await refreshStats();if(p==="granted"){showNotification("MiniAI 通知已啟用","任務提醒會在 App 運作時觸發。");addMessage("system","通知已啟用。")}else addMessage("system","通知未啟用。")};
@@ -308,11 +361,11 @@ el.settingsBtn.onclick=()=>{applySettingsToUI();el.settingsDialog.showModal()};e
 el.learnBtn.onclick=()=>{el.learnQuestion.value="";el.learnAnswer.value="";el.learnTags.value="";el.learnDialog.showModal()};el.cancelLearnBtn.onclick=()=>el.learnDialog.close();el.saveLearnBtn.onclick=async()=>{if(!el.learnQuestion.value.trim()||!el.learnAnswer.value.trim()){alert("標題和內容都要填。");return}await addKnowledge({type:"qa",title:el.learnQuestion.value,content:el.learnAnswer.value,tags:el.learnTags.value});await refreshStats();el.learnDialog.close();addMessage("system","新增知識完成。")};
 el.importDocBtn.onclick=()=>{el.docImportStatus.textContent="";el.docDialog.showModal()};el.chooseDocBtn.onclick=()=>el.docFile.click();el.docFile.onchange=async()=>{await importDocs(el.docFile.files);el.docFile.value=""};el.closeDocBtn.onclick=()=>el.docDialog.close();
 el.knowledgeBtn.onclick=async()=>{await openKnowledgeManager();el.knowledgeDialog.showModal()};el.knowledgeFilter.oninput=openKnowledgeManager;el.sortMode.onchange=openKnowledgeManager;el.closeKnowledgeBtn.onclick=()=>el.knowledgeDialog.close();
-el.exportBtn.onclick=async()=>{const knowledge=await getAll(KNOWLEDGE),chats=await getAll(CHATS),tasks=await getAll(TASKS),payload={app:"MiniAI PWA v7",exportedAt:new Date().toISOString(),settings:getSettings(),knowledge,chats,tasks};const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=`miniai-v7-backup-${todayISO()}.json`;a.click();URL.revokeObjectURL(url)};
-el.importBackupBtn.onclick=()=>el.backupFile.click();el.backupFile.onchange=async()=>{const file=el.backupFile.files[0];if(!file)return;try{const parsed=JSON.parse(await file.text()),knowledge=Array.isArray(parsed)?parsed:(parsed.knowledge||[]),chats=parsed.chats||[],tasks=parsed.tasks||[];let kCount=0,cCount=0,tCount=0;for(const row of knowledge){if(!row.title&&!row.question&&!row.content&&!row.answer)continue;await addKnowledge({type:row.type||(row.content?"doc_chunk":"qa"),title:row.title||row.question||row.sourceName||"",content:row.content||row.answer||"",tags:row.tags||["匯入"],sourceName:row.sourceName||"",chunkIndex:Number.isInteger(row.chunkIndex)?row.chunkIndex:null});kCount++}if(Array.isArray(chats)){for(const chat of chats){if(!chat.userText&&!chat.aiText)continue;await addRecord(CHATS,{userText:chat.userText||"",aiText:chat.aiText||"",taskMode:chat.taskMode||"general",answerEngine:chat.answerEngine||"hybrid",sourceTitles:chat.sourceTitles||[]});cCount++}}if(Array.isArray(tasks)){for(const task of tasks){if(!task.title)continue;await addTask({title:task.title,note:task.note||"",dueDate:task.dueDate||"",reminderAt:task.reminderAt||"",priority:task.priority||"medium",category:task.category||"",status:task.status||"open"});tCount++}}await refreshStats();addMessage("system",`匯入完成：新增 ${kCount} 筆知識、${cCount} 筆聊天、${tCount} 件任務。`)}catch(error){alert("匯入失敗。請確認 JSON 格式。")}finally{el.backupFile.value=""}};
+el.exportBtn.onclick=async()=>{const knowledge=await getAll(KNOWLEDGE),chats=await getAll(CHATS),tasks=await getAll(TASKS),payload={app:"MiniAI Local v8",exportedAt:new Date().toISOString(),settings:getSettings(),knowledge,chats,tasks};const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=`miniai-local-v8-backup-${todayISO()}.json`;a.click();URL.revokeObjectURL(url)};
+el.importBackupBtn.onclick=()=>el.backupFile.click();el.backupFile.onchange=async()=>{const file=el.backupFile.files[0];if(!file)return;try{const parsed=JSON.parse(await file.text()),knowledge=Array.isArray(parsed)?parsed:(parsed.knowledge||[]),chats=parsed.chats||[],tasks=parsed.tasks||[];let kCount=0,cCount=0,tCount=0;for(const row of knowledge){if(!row.title&&!row.question&&!row.content&&!row.answer)continue;await addKnowledge({type:row.type||(row.content?"doc_chunk":"qa"),title:row.title||row.question||row.sourceName||"",content:row.content||row.answer||"",tags:row.tags||["匯入"],sourceName:row.sourceName||"",chunkIndex:Number.isInteger(row.chunkIndex)?row.chunkIndex:null});kCount++}if(Array.isArray(chats)){for(const chat of chats){if(!chat.userText&&!chat.aiText)continue;await addRecord(CHATS,{userText:chat.userText||"",aiText:chat.aiText||"",taskMode:chat.taskMode||"general",answerEngine:"local",sourceTitles:chat.sourceTitles||[]});cCount++}}if(Array.isArray(tasks)){for(const task of tasks){if(!task.title)continue;await addTask({title:task.title,note:task.note||"",dueDate:task.dueDate||"",reminderAt:task.reminderAt||"",priority:task.priority||"medium",category:task.category||"",status:task.status||"open"});tCount++}}await refreshStats();addMessage("system",`匯入完成：新增 ${kCount} 筆知識、${cCount} 筆聊天、${tCount} 件任務。`)}catch(error){alert("匯入失敗。請確認 JSON 格式。")}finally{el.backupFile.value=""}};
 el.resetBtn.onclick=async()=>{if(!confirm("確定重置嗎？這會刪除知識庫、聊天紀錄與任務。"))return;await clearStore(KNOWLEDGE);await clearStore(CHATS);await clearStore(TASKS);for(const item of defaultKnowledge)await addKnowledge(item);await refreshStats();el.chat.innerHTML="";addMessage("system","MiniAI 已重置。")};
 window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();deferredPrompt=event;el.installBtn.hidden=false});el.installBtn.onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;el.installBtn.hidden=true};
-async function boot(){try{db=await openDB();applySettingsToUI();await seedIfNeeded();await refreshStats();restartReminderTimer();addMessage("ai","MiniAI PWA v7 已啟動。你可以啟用通知、匯出任務到行事曆，或用每日整理規劃今天。");if("serviceWorker"in navigator){try{await navigator.serviceWorker.register("./service-worker.js");addMessage("system","離線快取已準備好。若剛升級，請重新整理一次。")}catch(error){addMessage("system","Service Worker 註冊失敗。若是直接用檔案開啟，這是正常限制。部署到 HTTPS 後即可啟用。")}}await checkDueTasks(false)}catch(error){console.error(error);addMessage("system","初始化失敗。請確認瀏覽器支援 IndexedDB。")}}
+async function boot(){try{db=await openDB();applySettingsToUI();await seedIfNeeded();await refreshStats();restartReminderTimer();addMessage("ai","MiniAI Local v8 已啟動。這是完全本機版，不需要 OpenAI、Gemini、API Key 或後端。");if("serviceWorker"in navigator){try{await navigator.serviceWorker.register("./service-worker.js");addMessage("system","離線快取已準備好。若剛升級，請重新整理一次。")}catch(error){addMessage("system","Service Worker 註冊失敗。若是直接用檔案開啟，這是正常限制。部署到 HTTPS 後即可啟用。")}}await checkDueTasks(false)}catch(error){console.error(error);addMessage("system","初始化失敗。請確認瀏覽器支援 IndexedDB。")}}
 boot();
 </script>
 </body>
