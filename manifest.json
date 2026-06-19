@@ -1,12 +1,12 @@
 {
-  "name": "MiniAI PWA v2",
+  "name": "MiniAI PWA v7",
   "short_name": "MiniAI",
-  "description": "可安裝、可離線、IndexedDB 本機知識庫的私人迷你 AI。",
+  "description": "本機知識庫、大型模型、任務通知與行事曆匯出的私人 AI 助理。",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0b1020",
-  "theme_color": "#111827",
+  "background_color": "#050816",
+  "theme_color": "#07111f",
   "orientation": "portrait-primary",
   "icons": [
     {

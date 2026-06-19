@@ -1,0 +1,16 @@
+{
+  "name": "miniai-pwa-v7-notify-calendar",
+  "version": "0.7.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "vercel dev"
+  },
+  "dependencies": {
+    "openai": "^6.0.0"
+  },
+  "devDependencies": {
+    "vercel": "^48.0.0"
+  }
+}
