@@ -1,0 +1,1148 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <meta name="description" content="MiniAI PWA v2：可安裝、可離線、IndexedDB 本機知識庫的私人迷你 AI。" />
+  <link rel="manifest" href="./manifest.json" />
+  <title>MiniAI PWA v2</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: rgba(17, 24, 39, .82);
+      --card: rgba(31, 41, 55, .92);
+      --soft: rgba(255,255,255,.07);
+      --line: rgba(255,255,255,.13);
+      --text: #f8fafc;
+      --muted: #cbd5e1;
+      --accent: #38bdf8;
+      --accent2: #a78bfa;
+      --ok: #34d399;
+      --warn: #fbbf24;
+      --danger: #fb7185;
+      --shadow: 0 24px 80px rgba(0,0,0,.38);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,.22), transparent 32rem),
+        radial-gradient(circle at 80% 15%, rgba(52,211,153,.10), transparent 24rem),
+        radial-gradient(circle at bottom right, rgba(167,139,250,.20), transparent 30rem),
+        var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+    }
+
+    button, textarea, input, select {
+      font-family: inherit;
+    }
+
+    .app {
+      width: min(980px, 100%);
+      margin: 0 auto;
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    header {
+      padding: calc(18px + env(safe-area-inset-top)) 16px 14px;
+      background: rgba(11,16,32,.78);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: grid;
+      place-items: center;
+      color: #07111f;
+      font-weight: 900;
+      box-shadow: 0 14px 40px rgba(56,189,248,.22);
+      flex: 0 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: .2px;
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .badge {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 14px 0 0;
+      scrollbar-width: none;
+    }
+
+    .toolbar::-webkit-scrollbar { display: none; }
+
+    button {
+      border: 1px solid var(--line);
+      background: var(--soft);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    button.primary {
+      border: 0;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #07111f;
+      font-weight: 850;
+    }
+
+    button.danger {
+      border-color: rgba(251,113,133,.35);
+      background: rgba(251,113,133,.16);
+      color: #fecdd3;
+    }
+
+    button.ghost {
+      background: transparent;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    main {
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.055);
+      border-radius: 18px;
+      padding: 12px;
+    }
+
+    .stat .label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .stat .value {
+      font-size: 20px;
+      font-weight: 850;
+    }
+
+    .chat {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-bottom: 16px;
+    }
+
+    .msg {
+      max-width: 88%;
+      padding: 12px 14px;
+      border-radius: 18px;
+      line-height: 1.65;
+      font-size: 15px;
+      white-space: pre-wrap;
+      box-shadow: var(--shadow);
+    }
+
+    .msg.user {
+      align-self: flex-end;
+      border-bottom-right-radius: 6px;
+      background: linear-gradient(135deg, rgba(56,189,248,.98), rgba(167,139,250,.95));
+      color: #07111f;
+      font-weight: 650;
+    }
+
+    .msg.ai {
+      align-self: flex-start;
+      border-bottom-left-radius: 6px;
+      background: var(--card);
+      border: 1px solid var(--line);
+    }
+
+    .msg.system {
+      align-self: center;
+      max-width: 94%;
+      background: rgba(255,255,255,.05);
+      border: 1px dashed var(--line);
+      color: var(--muted);
+      box-shadow: none;
+      font-size: 13px;
+    }
+
+    .sources {
+      margin-top: 10px;
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .source-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 8px;
+      margin: 4px 5px 0 0;
+      background: rgba(255,255,255,.05);
+    }
+
+    footer {
+      padding: 12px 16px calc(14px + env(safe-area-inset-bottom));
+      background: rgba(11,16,32,.84);
+      backdrop-filter: blur(18px);
+      border-top: 1px solid var(--line);
+      position: sticky;
+      bottom: 0;
+    }
+
+    .composer {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 48px;
+      max-height: 150px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      padding: 12px 14px;
+      background: rgba(255,255,255,.07);
+      color: var(--text);
+      outline: none;
+      line-height: 1.55;
+      font-size: 15px;
+    }
+
+    textarea::placeholder, input::placeholder {
+      color: rgba(203,213,225,.72);
+    }
+
+    .hint {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    dialog {
+      width: min(760px, calc(100% - 26px));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--text);
+      background: #101827;
+      box-shadow: var(--shadow);
+      padding: 0;
+    }
+
+    dialog::backdrop {
+      background: rgba(0,0,0,.58);
+      backdrop-filter: blur(6px);
+    }
+
+    .modal {
+      padding: 18px;
+    }
+
+    .modal h2 {
+      margin: 0 0 8px;
+      font-size: 19px;
+    }
+
+    .modal p, .modal li {
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 14px;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    label {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    input, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(255,255,255,.07);
+      color: var(--text);
+      outline: none;
+      font-size: 15px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .knowledge-list {
+      display: grid;
+      gap: 10px;
+      max-height: 52vh;
+      overflow: auto;
+      margin-top: 12px;
+    }
+
+    .knowledge-item {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(255,255,255,.045);
+    }
+
+    .knowledge-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: start;
+      margin-bottom: 6px;
+    }
+
+    .knowledge-title {
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    .tag {
+      font-size: 11px;
+      color: #bae6fd;
+      border: 1px solid rgba(56,189,248,.25);
+      background: rgba(56,189,248,.08);
+      padding: 3px 7px;
+      border-radius: 999px;
+    }
+
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .two-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .empty {
+      color: var(--muted);
+      text-align: center;
+      border: 1px dashed var(--line);
+      border-radius: 16px;
+      padding: 24px 14px;
+    }
+
+    @media (max-width: 680px) {
+      .dashboard { grid-template-columns: 1fr 1fr; }
+      .dashboard .stat:last-child { grid-column: 1 / -1; }
+      .msg { max-width: 94%; }
+      .two-cols { grid-template-columns: 1fr; }
+      .brand { align-items: flex-start; }
+      .logo { width: 38px; height: 38px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="topline">
+        <div class="brand">
+          <div class="logo">AI</div>
+          <div>
+            <h1>MiniAI PWA v2</h1>
+            <p class="subtitle">手機可安裝、離線可用、知識存在本機 IndexedDB。</p>
+          </div>
+        </div>
+        <span class="badge" id="statusBadge">初始化中</span>
+      </div>
+
+      <div class="toolbar">
+        <button class="primary" id="installBtn" hidden>安裝到手機</button>
+        <button id="learnBtn">新增知識</button>
+        <button id="searchBtn">搜尋知識</button>
+        <button id="knowledgeBtn">管理知識庫</button>
+        <button id="exportBtn">匯出</button>
+        <button id="importBtn">匯入</button>
+        <button class="danger" id="resetBtn">重置</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="dashboard">
+        <div class="stat">
+          <div class="label">知識數量</div>
+          <div class="value" id="statKnowledge">0</div>
+        </div>
+        <div class="stat">
+          <div class="label">聊天次數</div>
+          <div class="value" id="statChats">0</div>
+        </div>
+        <div class="stat">
+          <div class="label">模式</div>
+          <div class="value" style="font-size:16px;">Local First</div>
+        </div>
+      </section>
+
+      <section class="chat" id="chat"></section>
+    </main>
+
+    <footer>
+      <form class="composer" id="chatForm">
+        <textarea id="userInput" placeholder="問我問題，或輸入：學習：問題 => 答案"></textarea>
+        <button class="primary" type="submit">送出</button>
+      </form>
+      <div class="hint">資料只存在這台裝置。要換手機或備份，請使用「匯出」。</div>
+    </footer>
+  </div>
+
+  <dialog id="learnDialog">
+    <div class="modal">
+      <h2>新增知識</h2>
+      <p>這會寫入本機 IndexedDB。建議用清楚的「問題 → 答案」格式，之後搜尋命中率會更好。</p>
+      <div class="form-grid">
+        <label>問題</label>
+        <input id="learnQuestion" placeholder="例如：什麼是 PWA" />
+        <label>答案</label>
+        <textarea id="learnAnswer" placeholder="例如：PWA 是可以像 App 一樣安裝的網頁應用。"></textarea>
+        <label>標籤，可選，用逗號分隔</label>
+        <input id="learnTags" placeholder="例如：AI, PWA, 工具" />
+      </div>
+      <div class="modal-actions">
+        <button id="cancelLearnBtn">取消</button>
+        <button class="primary" id="saveLearnBtn">儲存</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="knowledgeDialog">
+    <div class="modal">
+      <h2>管理知識庫</h2>
+      <div class="two-cols">
+        <input id="knowledgeFilter" placeholder="搜尋問題、答案或標籤" />
+        <select id="sortMode">
+          <option value="newest">最新在前</option>
+          <option value="oldest">最舊在前</option>
+          <option value="question">依問題排序</option>
+        </select>
+      </div>
+      <p id="knowledgeCount"></p>
+      <div class="knowledge-list" id="knowledgeList"></div>
+      <div class="modal-actions">
+        <button id="closeKnowledgeBtn">關閉</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="searchDialog">
+    <div class="modal">
+      <h2>搜尋知識</h2>
+      <p>用關鍵字找出已儲存知識。這不是上網搜尋，而是搜尋你自己的本機知識庫。</p>
+      <div class="form-grid">
+        <input id="searchInput" placeholder="輸入關鍵字" />
+      </div>
+      <div class="knowledge-list" id="searchResults"></div>
+      <div class="modal-actions">
+        <button id="closeSearchBtn">關閉</button>
+        <button class="primary" id="runSearchBtn">搜尋</button>
+      </div>
+    </div>
+  </dialog>
+
+  <input type="file" id="importFile" accept="application/json" hidden />
+
+  <script>
+    const DB_NAME = "MiniAI_PWA_v2";
+    const DB_VERSION = 1;
+    const KNOWLEDGE_STORE = "knowledge";
+    const META_STORE = "meta";
+
+    const defaultKnowledge = [
+      {
+        question: "你好",
+        answer: "你好，我是 MiniAI PWA v2。你可以問我問題，也可以教我新知識。",
+        tags: ["基本"]
+      },
+      {
+        question: "你是誰",
+        answer: "我是放在你手機裡的本機優先迷你 AI。我的知識庫存在這台裝置的 IndexedDB。",
+        tags: ["基本", "隱私"]
+      },
+      {
+        question: "什麼是 PWA",
+        answer: "PWA 是 Progressive Web App，可以把網頁做得像 App 一樣，支援安裝到桌面、離線快取與全螢幕體驗。",
+        tags: ["PWA", "手機"]
+      },
+      {
+        question: "什麼是人工智能",
+        answer: "人工智能是讓電腦執行需要智慧的任務，例如理解文字、分類、推理、生成內容與協助決策。",
+        tags: ["AI"]
+      },
+      {
+        question: "如何教你",
+        answer: "你可以按「新增知識」，或直接輸入：學習：問題 => 答案。",
+        tags: ["使用說明"]
+      },
+      {
+        question: "我的資料會上傳嗎",
+        answer: "不會。這版 MiniAI 是本機優先設計，知識庫存在這台裝置。除非你自己匯出或部署到其他服務，否則不會自動上傳。",
+        tags: ["隱私", "安全"]
+      }
+    ];
+
+    const el = {
+      chat: document.querySelector("#chat"),
+      chatForm: document.querySelector("#chatForm"),
+      userInput: document.querySelector("#userInput"),
+      installBtn: document.querySelector("#installBtn"),
+      learnBtn: document.querySelector("#learnBtn"),
+      searchBtn: document.querySelector("#searchBtn"),
+      knowledgeBtn: document.querySelector("#knowledgeBtn"),
+      exportBtn: document.querySelector("#exportBtn"),
+      importBtn: document.querySelector("#importBtn"),
+      resetBtn: document.querySelector("#resetBtn"),
+      learnDialog: document.querySelector("#learnDialog"),
+      knowledgeDialog: document.querySelector("#knowledgeDialog"),
+      searchDialog: document.querySelector("#searchDialog"),
+      learnQuestion: document.querySelector("#learnQuestion"),
+      learnAnswer: document.querySelector("#learnAnswer"),
+      learnTags: document.querySelector("#learnTags"),
+      cancelLearnBtn: document.querySelector("#cancelLearnBtn"),
+      saveLearnBtn: document.querySelector("#saveLearnBtn"),
+      knowledgeFilter: document.querySelector("#knowledgeFilter"),
+      sortMode: document.querySelector("#sortMode"),
+      knowledgeCount: document.querySelector("#knowledgeCount"),
+      knowledgeList: document.querySelector("#knowledgeList"),
+      closeKnowledgeBtn: document.querySelector("#closeKnowledgeBtn"),
+      searchInput: document.querySelector("#searchInput"),
+      searchResults: document.querySelector("#searchResults"),
+      closeSearchBtn: document.querySelector("#closeSearchBtn"),
+      runSearchBtn: document.querySelector("#runSearchBtn"),
+      importFile: document.querySelector("#importFile"),
+      statusBadge: document.querySelector("#statusBadge"),
+      statKnowledge: document.querySelector("#statKnowledge"),
+      statChats: document.querySelector("#statChats")
+    };
+
+    let db;
+    let deferredPrompt = null;
+    let chatCount = Number(localStorage.getItem("miniai_v2_chat_count") || 0);
+
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+        request.onupgradeneeded = () => {
+          const database = request.result;
+
+          if (!database.objectStoreNames.contains(KNOWLEDGE_STORE)) {
+            const store = database.createObjectStore(KNOWLEDGE_STORE, {
+              keyPath: "id",
+              autoIncrement: true
+            });
+            store.createIndex("createdAt", "createdAt");
+            store.createIndex("question", "question");
+          }
+
+          if (!database.objectStoreNames.contains(META_STORE)) {
+            database.createObjectStore(META_STORE, { keyPath: "key" });
+          }
+        };
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    function tx(storeName, mode = "readonly") {
+      return db.transaction(storeName, mode).objectStore(storeName);
+    }
+
+    function getAllKnowledge() {
+      return new Promise((resolve, reject) => {
+        const req = tx(KNOWLEDGE_STORE).getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    function addKnowledge(item) {
+      return new Promise((resolve, reject) => {
+        const now = new Date().toISOString();
+        const payload = {
+          question: item.question.trim(),
+          answer: item.answer.trim(),
+          tags: normalizeTags(item.tags || []),
+          createdAt: item.createdAt || now,
+          updatedAt: now
+        };
+        const req = tx(KNOWLEDGE_STORE, "readwrite").add(payload);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    function deleteKnowledge(id) {
+      return new Promise((resolve, reject) => {
+        const req = tx(KNOWLEDGE_STORE, "readwrite").delete(id);
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    function clearKnowledge() {
+      return new Promise((resolve, reject) => {
+        const req = tx(KNOWLEDGE_STORE, "readwrite").clear();
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function seedIfNeeded() {
+      const data = await getAllKnowledge();
+      if (data.length > 0) return;
+
+      for (const item of defaultKnowledge) {
+        await addKnowledge(item);
+      }
+    }
+
+    function normalizeTags(tags) {
+      if (typeof tags === "string") {
+        return tags.split(",").map(t => t.trim()).filter(Boolean);
+      }
+      if (Array.isArray(tags)) {
+        return tags.map(t => String(t).trim()).filter(Boolean);
+      }
+      return [];
+    }
+
+    function tokenize(text) {
+      const lower = String(text).toLowerCase().trim();
+      const english = lower.match(/[a-zA-Z0-9_]+/g) || [];
+      const chinese = lower.match(/[\u4e00-\u9fff]/g) || [];
+
+      const bigrams = [];
+      for (let i = 0; i < chinese.length - 1; i++) {
+        bigrams.push(chinese[i] + chinese[i + 1]);
+      }
+
+      return [...english, ...chinese, ...bigrams];
+    }
+
+    function cosineSimilarity(a, b) {
+      const ta = tokenize(a);
+      const tb = tokenize(b);
+      if (!ta.length || !tb.length) return 0;
+
+      const ca = Object.create(null);
+      const cb = Object.create(null);
+
+      ta.forEach(t => ca[t] = (ca[t] || 0) + 1);
+      tb.forEach(t => cb[t] = (cb[t] || 0) + 1);
+
+      const keys = new Set([...Object.keys(ca), ...Object.keys(cb)]);
+      let dot = 0, normA = 0, normB = 0;
+
+      keys.forEach(k => {
+        const va = ca[k] || 0;
+        const vb = cb[k] || 0;
+        dot += va * vb;
+        normA += va * va;
+        normB += vb * vb;
+      });
+
+      if (!normA || !normB) return 0;
+      return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+    }
+
+    function scoreKnowledge(query, item) {
+      const text = [
+        item.question || "",
+        item.answer || "",
+        ...(item.tags || [])
+      ].join(" ");
+
+      let score = cosineSimilarity(query, item.question) * 0.68
+        + cosineSimilarity(query, text) * 0.32;
+
+      const q = query.toLowerCase().trim();
+      const question = String(item.question || "").toLowerCase();
+      const answer = String(item.answer || "").toLowerCase();
+      const tagText = (item.tags || []).join(" ").toLowerCase();
+
+      if (question.includes(q)) score += 0.35;
+      if (answer.includes(q)) score += 0.12;
+      if (tagText.includes(q)) score += 0.18;
+
+      return score;
+    }
+
+    async function findAnswers(query, limit = 3) {
+      const data = await getAllKnowledge();
+      return data
+        .map(item => ({ item, score: scoreKnowledge(query, item) }))
+        .filter(row => row.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, limit);
+    }
+
+    function composeAnswer(query, matches) {
+      if (!matches.length || matches[0].score < 0.24) {
+        return {
+          answer: [
+            "這題我還不太會。",
+            "你可以這樣教我：",
+            "學習：你的問題 => 你希望我回答的答案"
+          ].join("\n"),
+          sources: []
+        };
+      }
+
+      const top = matches[0];
+      const confidence = Math.min(99, Math.round(top.score * 100));
+
+      let answer = top.item.answer;
+      answer += `\n\n可信度參考：${confidence}%`;
+
+      if (matches.length > 1 && matches[1].score >= 0.24) {
+        const extra = matches
+          .slice(1)
+          .filter(m => m.score >= 0.24)
+          .map(m => `「${m.item.question}」`)
+          .join("、");
+
+        if (extra) answer += `\n\n我也找到相關知識：${extra}`;
+      }
+
+      return {
+        answer,
+        sources: matches.filter(m => m.score >= 0.24).map(m => m.item)
+      };
+    }
+
+    async function reply(input) {
+      const text = input.trim();
+      if (!text) return { answer: "你還沒輸入內容。", sources: [] };
+
+      if (text === "/help" || text === "幫助") {
+        return {
+          answer: [
+            "可用方式：",
+            "1. 直接問問題",
+            "2. 輸入：學習：問題 => 答案",
+            "3. 按「新增知識」寫入資料",
+            "4. 按「匯出」備份知識庫",
+            "5. 部署到 HTTPS 後可安裝到手機桌面"
+          ].join("\n"),
+          sources: []
+        };
+      }
+
+      if (text.startsWith("學習：") || text.startsWith("學習:")) {
+        const content = text.replace(/^學習[:：]/, "").trim();
+        if (!content.includes("=>")) {
+          return { answer: "格式不對。請用：學習：問題 => 答案", sources: [] };
+        }
+
+        const [q, ...answerParts] = content.split("=>");
+        const a = answerParts.join("=>");
+
+        if (!q.trim() || !a.trim()) {
+          return { answer: "問題和答案都不能空白。", sources: [] };
+        }
+
+        await addKnowledge({ question: q, answer: a, tags: ["使用者新增"] });
+        await refreshStats();
+        return { answer: "我學會了。這筆知識已儲存在這台裝置。", sources: [] };
+      }
+
+      const matches = await findAnswers(text, 3);
+      return composeAnswer(text, matches);
+    }
+
+    function addMessage(role, text, sources = []) {
+      const msg = document.createElement("div");
+      msg.className = `msg ${role}`;
+      msg.textContent = text;
+
+      if (role === "ai" && sources.length) {
+        const sourceBox = document.createElement("div");
+        sourceBox.className = "sources";
+        sourceBox.textContent = "引用本機知識：";
+
+        sources.slice(0, 3).forEach(source => {
+          const pill = document.createElement("span");
+          pill.className = "source-pill";
+          pill.textContent = source.question;
+          sourceBox.appendChild(pill);
+        });
+
+        msg.appendChild(sourceBox);
+      }
+
+      el.chat.appendChild(msg);
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+      });
+    }
+
+    async function refreshStats() {
+      const data = await getAllKnowledge();
+      el.statKnowledge.textContent = data.length;
+      el.statChats.textContent = chatCount;
+      el.statusBadge.textContent = `知識庫：${data.length} 筆`;
+    }
+
+    function escapeHTML(text) {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function renderKnowledgeList(list) {
+      el.knowledgeList.innerHTML = "";
+      el.knowledgeCount.textContent = `顯示 ${list.length} 筆知識。`;
+
+      if (!list.length) {
+        el.knowledgeList.innerHTML = `<div class="empty">沒有找到符合的知識。</div>`;
+        return;
+      }
+
+      list.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "knowledge-item";
+        div.innerHTML = `
+          <div class="knowledge-head">
+            <div>
+              <div class="knowledge-title">${escapeHTML(item.question)}</div>
+              <div class="small">${new Date(item.createdAt || Date.now()).toLocaleString()}</div>
+            </div>
+            <button class="danger" data-delete="${item.id}">刪除</button>
+          </div>
+          <div>${escapeHTML(item.answer)}</div>
+          <div class="tag-row">
+            ${(item.tags || []).map(tag => `<span class="tag">${escapeHTML(tag)}</span>`).join("")}
+          </div>
+        `;
+
+        div.querySelector("[data-delete]").addEventListener("click", async () => {
+          const ok = confirm("確定刪除這筆知識嗎？");
+          if (!ok) return;
+          await deleteKnowledge(item.id);
+          await openKnowledgeManager();
+          await refreshStats();
+        });
+
+        el.knowledgeList.appendChild(div);
+      });
+    }
+
+    async function openKnowledgeManager() {
+      let data = await getAllKnowledge();
+      const keyword = el.knowledgeFilter.value.trim().toLowerCase();
+
+      if (keyword) {
+        data = data.filter(item => {
+          const haystack = [
+            item.question,
+            item.answer,
+            ...(item.tags || [])
+          ].join(" ").toLowerCase();
+          return haystack.includes(keyword);
+        });
+      }
+
+      const sortMode = el.sortMode.value;
+      if (sortMode === "newest") {
+        data.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+      } else if (sortMode === "oldest") {
+        data.sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
+      } else {
+        data.sort((a, b) => String(a.question).localeCompare(String(b.question), "zh-Hant"));
+      }
+
+      renderKnowledgeList(data);
+    }
+
+    async function runKnowledgeSearch() {
+      const query = el.searchInput.value.trim();
+      el.searchResults.innerHTML = "";
+
+      if (!query) {
+        el.searchResults.innerHTML = `<div class="empty">請先輸入關鍵字。</div>`;
+        return;
+      }
+
+      const results = await findAnswers(query, 10);
+
+      if (!results.length) {
+        el.searchResults.innerHTML = `<div class="empty">沒有找到相關知識。</div>`;
+        return;
+      }
+
+      results.forEach(({ item, score }) => {
+        const div = document.createElement("div");
+        div.className = "knowledge-item";
+        div.innerHTML = `
+          <div class="knowledge-title">${escapeHTML(item.question)}</div>
+          <div class="small">相關度：${Math.round(score * 100)}%</div>
+          <div style="margin-top:6px">${escapeHTML(item.answer)}</div>
+          <div class="tag-row">${(item.tags || []).map(tag => `<span class="tag">${escapeHTML(tag)}</span>`).join("")}</div>
+        `;
+        el.searchResults.appendChild(div);
+      });
+    }
+
+    el.chatForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const text = el.userInput.value.trim();
+      if (!text) return;
+
+      addMessage("user", text);
+      el.userInput.value = "";
+
+      chatCount += 1;
+      localStorage.setItem("miniai_v2_chat_count", chatCount);
+      await refreshStats();
+
+      const thinking = document.createElement("div");
+      thinking.className = "msg ai";
+      thinking.textContent = "思考中...";
+      el.chat.appendChild(thinking);
+
+      const result = await reply(text);
+      thinking.remove();
+      addMessage("ai", result.answer, result.sources);
+    });
+
+    el.learnBtn.addEventListener("click", () => {
+      el.learnQuestion.value = "";
+      el.learnAnswer.value = "";
+      el.learnTags.value = "";
+      el.learnDialog.showModal();
+    });
+
+    el.cancelLearnBtn.addEventListener("click", () => el.learnDialog.close());
+
+    el.saveLearnBtn.addEventListener("click", async () => {
+      const q = el.learnQuestion.value.trim();
+      const a = el.learnAnswer.value.trim();
+      const tags = el.learnTags.value.trim();
+
+      if (!q || !a) {
+        alert("問題和答案都要填。");
+        return;
+      }
+
+      await addKnowledge({ question: q, answer: a, tags });
+      await refreshStats();
+      el.learnDialog.close();
+      addMessage("system", "新增完成。這筆知識已寫入本機 IndexedDB。");
+    });
+
+    el.knowledgeBtn.addEventListener("click", async () => {
+      await openKnowledgeManager();
+      el.knowledgeDialog.showModal();
+    });
+
+    el.knowledgeFilter.addEventListener("input", openKnowledgeManager);
+    el.sortMode.addEventListener("change", openKnowledgeManager);
+    el.closeKnowledgeBtn.addEventListener("click", () => el.knowledgeDialog.close());
+
+    el.searchBtn.addEventListener("click", () => {
+      el.searchInput.value = "";
+      el.searchResults.innerHTML = `<div class="empty">輸入關鍵字後按搜尋。</div>`;
+      el.searchDialog.showModal();
+    });
+
+    el.closeSearchBtn.addEventListener("click", () => el.searchDialog.close());
+    el.runSearchBtn.addEventListener("click", runKnowledgeSearch);
+    el.searchInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") runKnowledgeSearch();
+    });
+
+    el.exportBtn.addEventListener("click", async () => {
+      const data = await getAllKnowledge();
+      const payload = {
+        app: "MiniAI PWA v2",
+        exportedAt: new Date().toISOString(),
+        knowledge: data
+      };
+
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `miniai-knowledge-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    el.importBtn.addEventListener("click", () => el.importFile.click());
+
+    el.importFile.addEventListener("change", async () => {
+      const file = el.importFile.files[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        const rows = Array.isArray(parsed) ? parsed : parsed.knowledge;
+
+        if (!Array.isArray(rows)) throw new Error("格式不是陣列");
+
+        let count = 0;
+        for (const row of rows) {
+          if (!row.question || !row.answer) continue;
+          await addKnowledge({
+            question: row.question,
+            answer: row.answer,
+            tags: row.tags || ["匯入"]
+          });
+          count++;
+        }
+
+        await refreshStats();
+        addMessage("system", `匯入完成：新增 ${count} 筆知識。`);
+      } catch (error) {
+        alert("匯入失敗。請確認 JSON 格式正確。");
+      } finally {
+        el.importFile.value = "";
+      }
+    });
+
+    el.resetBtn.addEventListener("click", async () => {
+      const ok = confirm("確定重置知識庫嗎？這會刪除你新增的所有知識。");
+      if (!ok) return;
+
+      await clearKnowledge();
+      for (const item of defaultKnowledge) {
+        await addKnowledge(item);
+      }
+
+      await refreshStats();
+      addMessage("system", "知識庫已重置為預設內容。");
+    });
+
+    window.addEventListener("beforeinstallprompt", (event) => {
+      event.preventDefault();
+      deferredPrompt = event;
+      el.installBtn.hidden = false;
+    });
+
+    el.installBtn.addEventListener("click", async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      el.installBtn.hidden = true;
+    });
+
+    async function boot() {
+      try {
+        db = await openDB();
+        await seedIfNeeded();
+        await refreshStats();
+        addMessage("ai", "MiniAI PWA v2 已啟動。你可以問我問題，也可以用「學習：問題 => 答案」教我新知識。");
+
+        if ("serviceWorker" in navigator) {
+          try {
+            await navigator.serviceWorker.register("./service-worker.js");
+            addMessage("system", "離線快取已準備好。部署到 HTTPS 後，可安裝到手機桌面。");
+          } catch (error) {
+            addMessage("system", "Service Worker 註冊失敗。若你是直接用檔案開啟，這是正常限制。部署到 HTTPS 後即可啟用。");
+          }
+        } else {
+          addMessage("system", "此瀏覽器不支援 Service Worker，PWA 離線功能會受限。");
+        }
+      } catch (error) {
+        console.error(error);
+        addMessage("system", "初始化失敗。請確認瀏覽器支援 IndexedDB。");
+      }
+    }
+
+    boot();
+  </script>
+</body>
+</html>
