@@ -1,6 +1,6 @@
-# MiniAI Local Final
+# MiniAI Local Final PDF
 
-完全本機版，不連 OpenAI、不連 Gemini、不需要 API Key、不需要 Vercel 後端。
+完全本機版，不連 OpenAI、不連 Gemini、不需要 API Key、不需要 Vercel 後端。此版本新增文字型 PDF 匯入。
 
 ## 最終版功能
 
@@ -21,7 +21,7 @@
   - 方劑 / 食療
   - 翡翠資料
   - 帳號安全檢查
-- TXT / Markdown / JSON 文件匯入
+- TXT / Markdown / JSON / 文字型 PDF 文件匯入
 - 全部資料匯出 / 匯入備份
 - PWA 安裝
 - 離線快取
@@ -83,3 +83,26 @@ https://你的帳號.github.io/你的repo/
 ```
 
 或清除該網站資料。
+
+
+## PDF 匯入說明
+
+此版本新增 PDF 匯入。
+
+支援：
+
+```text
+文字型 PDF
+```
+
+不支援：
+
+```text
+掃描圖片 PDF
+加密 PDF
+需要 OCR 的 PDF
+```
+
+PDF 匯入會在瀏覽器本機抽取文字，再切段存入 IndexedDB 知識庫。
+
+注意：PDF 解析器會從 CDN 載入 pdf.js 程式庫，但 PDF 檔案內容是在你的瀏覽器本機解析，不會送到 OpenAI、Gemini 或 Vercel 後端。

@@ -1,7 +1,7 @@
 {
-  "name": "MiniAI Local Final",
+  "name": "MiniAI Local Final PDF",
   "short_name": "MiniAI",
-  "description": "完全本機、不需 API Key 的手機私人知識庫、任務與模板助理。",
+  "description": "完全本機、不需 API Key，支援 PDF 匯入的手機私人知識庫、任務與模板助理。",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

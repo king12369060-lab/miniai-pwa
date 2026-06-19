@@ -4,9 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#07111f" />
-  <meta name="description" content="MiniAI Local Final：完全本機、不需 API Key 的手機私人知識庫、任務與模板助理。" />
+  <meta name="description" content="MiniAI Local Final PDF：完全本機、不需 API Key，支援 PDF 匯入的手機私人知識庫、任務與模板助理。" />
   <link rel="manifest" href="./manifest.json" />
-  <title>MiniAI Local Final</title>
+  <title>MiniAI Local Final PDF</title>
   <style>
     :root{
       --bg:#050816;
@@ -438,8 +438,8 @@
         <div class="brand">
           <div class="logo">AI</div>
           <div>
-            <h1>MiniAI Local Final</h1>
-            <p class="sub">完全本機：知識、任務、模板、提醒、備份，不接大型模型。</p>
+            <h1>MiniAI Local Final PDF</h1>
+            <p class="sub">完全本機：支援 PDF 匯入，知識、任務、模板、提醒、備份。</p>
           </div>
         </div>
         <span class="badge" id="statusBadge">啟動中</span>
@@ -537,7 +537,7 @@
           </select>
         </div>
         <div class="actions" style="margin-bottom:10px">
-          <button id="importDocBtn">匯入 TXT / MD / JSON</button>
+          <button id="importDocBtn">匯入 TXT / MD / JSON / PDF</button>
           <button id="exportKnowledgeBtn">匯出知識</button>
         </div>
         <div class="list" id="knowledgeList"></div>
@@ -671,7 +671,7 @@
   <dialog id="docDialog">
     <div class="modal">
       <h2>匯入文件</h2>
-      <div class="notice">支援 TXT、Markdown、JSON。PDF 建議先轉成文字。長文件會自動切段存入本機知識庫。</div>
+      <div class="notice">支援 TXT、Markdown、JSON、文字型 PDF。掃描圖片 PDF 需要 OCR，這版不做 OCR。長文件會自動切段存入本機知識庫。</div>
       <div class="form" style="margin-top:10px">
         <label>存到分類</label>
         <select id="docCategory"></select>
@@ -692,7 +692,7 @@
     </div>
   </dialog>
 
-  <input type="file" id="docFile" accept=".txt,.md,.markdown,.json,text/plain,text/markdown,application/json" multiple hidden />
+  <input type="file" id="docFile" accept=".txt,.md,.markdown,.json,.pdf,text/plain,text/markdown,application/json,application/pdf" multiple hidden />
   <input type="file" id="backupFile" accept="application/json,.json" hidden />
 
   <script>
@@ -1142,13 +1142,67 @@
       if(cur)out.push(cur);
       return out.length?out:[c].filter(Boolean);
     }
+
+    let pdfJsReadyPromise=null;
+    async function ensurePdfJs(){
+      if(window.pdfjsLib)return window.pdfjsLib;
+      if(pdfJsReadyPromise)return pdfJsReadyPromise;
+      pdfJsReadyPromise=new Promise((resolve,reject)=>{
+        const script=document.createElement("script");
+        script.src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs";
+        script.type="module";
+        script.onload=()=>{
+          setTimeout(()=>{
+            const lib=window.pdfjsLib||window["pdfjs-dist/build/pdf"];
+            if(window.pdfjsLib){
+              window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+              resolve(window.pdfjsLib);
+            }else if(lib){
+              window.pdfjsLib=lib;
+              window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+              resolve(window.pdfjsLib);
+            }else{
+              reject(new Error("PDF 解析器載入失敗"));
+            }
+          },200);
+        };
+        script.onerror=()=>reject(new Error("無法載入 PDF 解析器。請確認網路可用。"));
+        document.head.appendChild(script);
+      });
+      return pdfJsReadyPromise;
+    }
+    async function extractPdfText(file){
+      const pdfjsLib=await ensurePdfJs();
+      const data=await file.arrayBuffer();
+      const pdf=await pdfjsLib.getDocument({data}).promise;
+      const pages=[];
+      for(let pageNo=1;pageNo<=pdf.numPages;pageNo++){
+        els.docStatus.textContent=`讀取 PDF：${file.name}｜第 ${pageNo}/${pdf.numPages} 頁`;
+        const page=await pdf.getPage(pageNo);
+        const content=await page.getTextContent();
+        const strings=content.items.map(item=>item.str||"").filter(Boolean);
+        const text=strings.join(" ").replace(/\s+/g," ").trim();
+        if(text)pages.push(`【第 ${pageNo} 頁】\n${text}`);
+      }
+      return pages.join("\n\n");
+    }
+
     async function importDocs(files){
       let count=0;
       for(const file of files){
         els.docStatus.textContent=`處理中：${file.name}`;
         try{
-          const text=await file.text();
-          if(file.name.toLowerCase().endsWith(".json")){
+          let text="";
+          const lowerName=file.name.toLowerCase();
+          if(lowerName.endsWith(".pdf")){
+            text=await extractPdfText(file);
+            if(!text.trim()){
+              throw new Error("PDF 沒有抽出文字，可能是掃描圖片 PDF。");
+            }
+          }else{
+            text=await file.text();
+          }
+          if(lowerName.endsWith(".json")){
             const parsed=JSON.parse(text);
             const rows=Array.isArray(parsed)?parsed:(parsed.knowledge||[]);
             if(Array.isArray(rows)&&rows.length){
@@ -1297,7 +1351,7 @@
         await seed();
         await refreshStats();
         renderTemplates();
-        addMessage("ai","MiniAI Local Final 已啟動。這是完全本機版，可做知識庫、任務、模板、提醒與備份。");
+        addMessage("ai","MiniAI Local Final PDF 已啟動。這是完全本機版，可匯入文字型 PDF，並做知識庫、任務、模板、提醒與備份。");
         if("serviceWorker" in navigator){
           try{await navigator.serviceWorker.register("./service-worker.js");addMessage("system","離線快取已準備好。若剛升級，請重新整理一次。")}catch(e){addMessage("system","Service Worker 未啟用。部署到 HTTPS 後即可使用離線快取。")}
         }
