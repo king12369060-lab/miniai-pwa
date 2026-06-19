@@ -1,47 +1,34 @@
-# MiniAI Local v8
+# MiniAI Local Final
 
-完全本機版，不接 OpenAI，不接 Gemini，不需要 API Key，也不需要後端函式。
+完全本機版，不連 OpenAI、不連 Gemini、不需要 API Key、不需要 Vercel 後端。
 
-## 保留功能
+## 最終版功能
 
+- 手機底部導航列
+- 分類首頁
+- 本機知識庫
+- 本機搜尋與簡單整理
+- 任務管理
+- 到期日、提醒時間、優先級
+- 重複任務：每天、每週、每月
+- 任務匯出 `.ics` 行事曆
+- 常用模板：
+  - 股票操作紀錄
+  - 健康症狀紀錄
+  - 旅遊行程
+  - SOP
+  - 待辦
+  - 方劑 / 食療
+  - 翡翠資料
+  - 帳號安全檢查
+- TXT / Markdown / JSON 文件匯入
+- 全部資料匯出 / 匯入備份
 - PWA 安裝
 - 離線快取
-- 本機知識庫 IndexedDB
-- TXT / Markdown / JSON 匯入
-- 本機搜尋
-- 新增問答知識
-- 任務管理
-- 任務提醒時間
-- 本機通知
-- 任務匯出 `.ics`
-- 聊天紀錄
-- 匯出 / 匯入備份
 
-## 移除功能
+## 要上傳到 GitHub 的檔案
 
-- OpenAI 連線
-- Gemini 連線
-- `/api/chat.js`
-- `package.json`
-- Vercel 後端
-- API Key 設定
-
-## 部署
-
-這版可以用 GitHub Pages 部署即可，不需要 Vercel。
-
-GitHub Pages：
-
-```text
-Settings
-→ Pages
-→ Deploy from branch
-→ main / root
-```
-
-## 升級方式
-
-把本資料夾裡的檔案上傳到 GitHub repo 最外層：
+只需要這些：
 
 ```text
 index.html
@@ -52,33 +39,47 @@ icon-512.svg
 README.md
 ```
 
-如果 repo 裡還有舊的：
+不需要這些：
 
 ```text
 api/
+chat.js
 package.json
 .env.example
 ```
 
-可以刪掉，因為本機版不用。
+## GitHub Pages 部署
 
-## 注意
+到 GitHub repo：
 
-這版不是大型模型，所以回答能力是本機搜尋與簡單整理，不會像 ChatGPT 或 Gemini 一樣深度推理。
+```text
+Settings
+→ Pages
+→ Deploy from a branch
+→ main
+→ /root
+→ Save
+```
 
-但優點是：
+網址通常是：
 
-- 不花 API 費
-- 不需要 API Key
-- 不會自動把資料送到模型
-- 比較簡單穩定
+```text
+https://你的帳號.github.io/你的repo/
+```
 
+## 重要提醒
 
-## v8.1 手機螢幕適配修正
+資料存在手機瀏覽器本機 IndexedDB。清除網站資料、換手機、重裝瀏覽器前，請先到設定匯出全部備份。
 
-- 工具列按鈕改成自動換行 / 手機雙欄
-- 快捷按鈕改成自動換行 / 手機雙欄
-- 移除主要區塊的左右滑動
-- 長文字、網址、錯誤訊息會自動斷行
-- 對話框限制在螢幕寬度內
-- 手機輸入框與送出按鈕改為上下排列
+## 升級後看不到新版？
+
+手機 PWA 可能有快取。請：
+
+```text
+移除桌面上的舊 MiniAI
+→ Chrome 開 GitHub Pages 網址
+→ 重新整理
+→ 重新新增到主畫面
+```
+
+或清除該網站資料。

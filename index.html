@@ -4,369 +4,1311 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#07111f" />
-  <meta name="description" content="MiniAI PWA Local v8：完全本機、不需 API Key 的私人知識庫與任務助理。" />
+  <meta name="description" content="MiniAI Local Final：完全本機、不需 API Key 的手機私人知識庫、任務與模板助理。" />
   <link rel="manifest" href="./manifest.json" />
-  <title>MiniAI Local v8</title>
+  <title>MiniAI Local Final</title>
   <style>
     :root{
-      --bg:#050816;--card:rgba(30,41,59,.95);--soft:rgba(255,255,255,.07);
-      --line:rgba(255,255,255,.13);--text:#f8fafc;--muted:#cbd5e1;
-      --accent:#38bdf8;--accent2:#a78bfa;--ok:#34d399;--warn:#fbbf24;
-      --danger:#fb7185;--shadow:0 24px 80px rgba(0,0,0,.42)
+      --bg:#050816;
+      --card:#111827;
+      --card2:#172133;
+      --soft:rgba(255,255,255,.07);
+      --soft2:rgba(255,255,255,.105);
+      --line:rgba(255,255,255,.14);
+      --text:#f8fafc;
+      --muted:#cbd5e1;
+      --muted2:#94a3b8;
+      --accent:#38bdf8;
+      --accent2:#a78bfa;
+      --ok:#34d399;
+      --warn:#fbbf24;
+      --danger:#fb7185;
+      --shadow:0 22px 70px rgba(0,0,0,.38);
+      --radius:20px;
     }
     *{box-sizing:border-box}
-    html,body{margin:0;min-height:100%;width:100%;max-width:100%;overflow-x:hidden;background:
-      radial-gradient(circle at top left,rgba(56,189,248,.18),transparent 32rem),
-      radial-gradient(circle at 85% 8%,rgba(52,211,153,.10),transparent 24rem),
-      radial-gradient(circle at bottom right,rgba(167,139,250,.22),transparent 30rem),var(--bg);
-      color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif}
-    button,textarea,input,select{font-family:inherit}
-    .app{width:100%;max-width:1120px;margin:0 auto;min-height:100vh;display:grid;grid-template-rows:auto 1fr auto;overflow-x:hidden}
-    header{padding:calc(18px + env(safe-area-inset-top)) 16px 14px;background:rgba(5,8,22,.82);backdrop-filter:blur(18px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
-    .topline{display:flex;justify-content:space-between;align-items:center;gap:12px}
-    .brand{display:flex;align-items:center;gap:12px;min-width:0}
-    .logo{width:46px;height:46px;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#07111f;font-weight:950;box-shadow:0 14px 40px rgba(56,189,248,.25)}
-    h1{margin:0;font-size:20px;line-height:1.2}.subtitle{margin:4px 0 0;color:var(--muted);font-size:13px;line-height:1.35}
-    .badge{border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--muted);border-radius:999px;padding:7px 10px;font-size:12px;white-space:nowrap}
-    .toolbar,.quick-row{display:flex;gap:8px;flex-wrap:wrap;overflow-x:hidden;max-width:100%}.toolbar{padding-top:14px}
-    button{border:1px solid var(--line);background:var(--soft);color:var(--text);border-radius:14px;padding:10px 12px;cursor:pointer;font-size:14px;white-space:normal;line-height:1.25;max-width:100%;overflow-wrap:anywhere}
-    button.primary{border:0;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#07111f;font-weight:850}
-    button.ok{border-color:rgba(52,211,153,.35);background:rgba(52,211,153,.14);color:#bbf7d0}
+    html,body{
+      margin:0;
+      width:100%;
+      max-width:100%;
+      min-height:100%;
+      overflow-x:hidden;
+      background:
+        radial-gradient(circle at top left,rgba(56,189,248,.18),transparent 30rem),
+        radial-gradient(circle at 86% 4%,rgba(167,139,250,.20),transparent 28rem),
+        radial-gradient(circle at bottom right,rgba(52,211,153,.12),transparent 30rem),
+        var(--bg);
+      color:var(--text);
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;
+    }
+    button,input,select,textarea{font-family:inherit}
+    button{
+      border:1px solid var(--line);
+      background:var(--soft);
+      color:var(--text);
+      border-radius:16px;
+      padding:11px 12px;
+      font-size:14px;
+      line-height:1.25;
+      cursor:pointer;
+      max-width:100%;
+      white-space:normal;
+      overflow-wrap:anywhere;
+    }
+    button.primary{
+      border:0;
+      color:#07111f;
+      font-weight:900;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+    }
+    button.ok{border-color:rgba(52,211,153,.35);background:rgba(52,211,153,.13);color:#bbf7d0}
     button.warn{border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.13);color:#fde68a}
-    button.danger{border-color:rgba(251,113,133,.35);background:rgba(251,113,133,.16);color:#fecdd3}
-    main{padding:16px;overflow-y:auto;overflow-x:hidden;max-width:100%}
-    .dashboard{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
-    .stat{border:1px solid var(--line);background:rgba(255,255,255,.055);border-radius:18px;padding:12px;min-height:74px}
-    .stat .label{color:var(--muted);font-size:12px;margin-bottom:4px}.stat .value{font-size:19px;font-weight:850;overflow-wrap:anywhere}
-    .mode-row{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:14px}
-    .mode-card{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.045);padding:12px}
-    .mode-card label{display:block;margin-bottom:7px;font-size:12px;color:var(--muted)}
-    .quick-row{margin-bottom:14px}
-    .chat{display:flex;flex-direction:column;gap:12px;padding-bottom:16px}
-    .msg{max-width:92%;padding:12px 14px;border-radius:18px;line-height:1.65;font-size:15px;white-space:pre-wrap;box-shadow:var(--shadow);overflow-wrap:anywhere;word-break:break-word}
-    .msg.user{align-self:flex-end;border-bottom-right-radius:6px;background:linear-gradient(135deg,rgba(56,189,248,.98),rgba(167,139,250,.95));color:#07111f;font-weight:650}
-    .msg.ai{align-self:flex-start;border-bottom-left-radius:6px;background:var(--card);border:1px solid var(--line)}
-    .msg.system{align-self:center;max-width:96%;background:rgba(255,255,255,.05);border:1px dashed var(--line);color:var(--muted);box-shadow:none;font-size:13px}
-    .sources{margin-top:10px;border-top:1px solid var(--line);padding-top:10px;color:var(--muted);font-size:12px}
-    .source-pill{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:5px 8px;margin:4px 5px 0 0;background:rgba(255,255,255,.05);max-width:100%;overflow-wrap:anywhere;word-break:break-word}
-    footer{padding:12px 16px calc(14px + env(safe-area-inset-bottom));background:rgba(5,8,22,.84);backdrop-filter:blur(18px);border-top:1px solid var(--line);position:sticky;bottom:0;overflow-x:hidden;max-width:100%}
-    .composer{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;max-width:100%}
-    textarea{width:100%;max-width:100%;min-height:48px;max-height:190px;resize:vertical;border:1px solid var(--line);border-radius:17px;padding:12px 14px;background:rgba(255,255,255,.07);color:var(--text);outline:none;line-height:1.55;font-size:15px;overflow-wrap:anywhere}
-    input,select{width:100%;max-width:100%;min-width:0;border:1px solid var(--line);border-radius:14px;padding:12px;background:rgba(255,255,255,.07);color:var(--text);outline:none;font-size:15px}
-    textarea::placeholder,input::placeholder{color:rgba(203,213,225,.72)}.hint{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.45}
-    dialog{width:min(960px,calc(100vw - 20px));max-width:calc(100vw - 20px);border:1px solid var(--line);border-radius:22px;color:var(--text);background:#101827;box-shadow:var(--shadow);padding:0;overflow-x:hidden}
-    dialog::backdrop{background:rgba(0,0,0,.58);backdrop-filter:blur(6px)}.modal{padding:18px}.modal h2{margin:0 0 8px;font-size:19px}.modal p,.modal li{color:var(--muted);line-height:1.65;font-size:14px}
-    .form-grid{display:grid;gap:10px;margin-top:12px}label{font-size:13px;color:var(--muted)}
-    .modal-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-top:14px}
-    .list{display:grid;gap:10px;max-height:58vh;overflow:auto;margin-top:12px}
-    .item{border:1px solid var(--line);border-radius:16px;padding:12px;background:rgba(255,255,255,.045)}
-    .item.done{opacity:.62}.item-head{display:flex;justify-content:space-between;gap:10px;align-items:start;margin-bottom:6px}
-    .item-title{font-weight:850;line-height:1.45;overflow-wrap:anywhere}.small{font-size:12px;color:var(--muted)}
-    .two-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px}.three-cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-    .empty{color:var(--muted);text-align:center;border:1px dashed var(--line);border-radius:16px;padding:24px 14px}
-    .tag-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}.tag{font-size:11px;color:#bae6fd;border:1px solid rgba(56,189,248,.25);background:rgba(56,189,248,.08);padding:3px 7px;border-radius:999px}
-    .tag.mode{color:#d8b4fe;border-color:rgba(167,139,250,.28);background:rgba(167,139,250,.10)}.tag.warn{color:#fde68a;border-color:rgba(251,191,36,.28);background:rgba(251,191,36,.10)}.tag.ok{color:#bbf7d0;border-color:rgba(52,211,153,.28);background:rgba(52,211,153,.10)}
-    .drop-zone{border:1px dashed rgba(56,189,248,.45);background:rgba(56,189,248,.07);border-radius:18px;padding:18px;text-align:center;color:var(--muted)}
-    .drop-zone strong{color:var(--text)}
-    @media(max-width:900px){.dashboard{grid-template-columns:1fr 1fr}.dashboard .stat:last-child{grid-column:1 / -1}}
-    @media(max-width:760px){.mode-row,.two-cols,.three-cols{grid-template-columns:1fr}.msg{max-width:95%}.logo{width:38px;height:38px}.stat .value{font-size:17px}}
-
-    @media(max-width:760px){
-      header{padding-left:12px;padding-right:12px}
-      main{padding:12px}
-      footer{padding-left:12px;padding-right:12px}
-      .topline{align-items:flex-start}
-      .brand{gap:10px}
-      h1{font-size:18px}
-      .subtitle{font-size:12px}
-      .badge{font-size:11px;padding:6px 8px}
-      .toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-      .toolbar button{width:100%;min-width:0;padding:10px 8px;font-size:13px}
-      .quick-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-      .quick-row button{width:100%;min-width:0;padding:10px 8px;font-size:13px}
-      .dashboard{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-      .stat{min-height:68px;padding:10px}
-      .stat .value{font-size:16px}
-      .mode-row,.two-cols,.three-cols{grid-template-columns:1fr}
-      .msg{max-width:100%;width:fit-content}
-      .msg.ai{max-width:100%}
-      .msg.user{max-width:92%}
-      .composer{grid-template-columns:1fr}
-      .composer button{width:100%}
-      .logo{width:38px;height:38px}
-      dialog{max-height:88vh}
-      .modal{padding:14px}
-      .modal-actions{display:grid;grid-template-columns:1fr 1fr}
-      .modal-actions button{width:100%}
-      .list{max-height:56vh}
+    button.danger{border-color:rgba(251,113,133,.40);background:rgba(251,113,133,.15);color:#fecdd3}
+    input,select,textarea{
+      width:100%;
+      max-width:100%;
+      min-width:0;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px 13px;
+      background:rgba(255,255,255,.075);
+      color:var(--text);
+      outline:none;
+      font-size:15px;
+    }
+    textarea{
+      min-height:92px;
+      resize:vertical;
+      line-height:1.55;
+      overflow-wrap:anywhere;
+    }
+    input::placeholder,textarea::placeholder{color:rgba(203,213,225,.72)}
+    select option{background:#111827;color:#f8fafc}
+    .app{
+      width:100%;
+      max-width:1120px;
+      min-height:100vh;
+      margin:0 auto;
+      display:grid;
+      grid-template-rows:auto 1fr auto;
+      overflow-x:hidden;
+    }
+    header{
+      position:sticky;
+      top:0;
+      z-index:20;
+      padding:calc(14px + env(safe-area-inset-top)) 14px 12px;
+      background:rgba(5,8,22,.86);
+      backdrop-filter:blur(18px);
+      border-bottom:1px solid var(--line);
+    }
+    .top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      min-width:0;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+    .logo{
+      width:42px;
+      height:42px;
+      flex:0 0 auto;
+      display:grid;
+      place-items:center;
+      border-radius:16px;
+      color:#07111f;
+      font-weight:950;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      box-shadow:0 14px 36px rgba(56,189,248,.23);
+    }
+    h1{font-size:18px;line-height:1.15;margin:0}
+    .sub{font-size:12px;color:var(--muted);line-height:1.35;margin:4px 0 0;overflow-wrap:anywhere}
+    .badge{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--muted);
+      border-radius:999px;
+      padding:7px 9px;
+      font-size:11px;
+      white-space:nowrap;
+    }
+    main{
+      width:100%;
+      max-width:100%;
+      overflow-x:hidden;
+      padding:14px 14px 112px;
+    }
+    .view{display:none}
+    .view.active{display:block}
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+    }
+    .grid.one{grid-template-columns:1fr}
+    .grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .card{
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      background:rgba(17,24,39,.78);
+      box-shadow:var(--shadow);
+      padding:14px;
+      overflow:hidden;
+      overflow-wrap:anywhere;
+    }
+    .mini-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:rgba(255,255,255,.055);
+      padding:12px;
+      overflow:hidden;
+      overflow-wrap:anywhere;
+    }
+    .stat-label{color:var(--muted);font-size:12px;margin-bottom:6px}
+    .stat-value{font-size:21px;font-weight:950;line-height:1.15}
+    .section-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin:18px 0 10px;
+    }
+    .section-title h2{font-size:17px;margin:0}
+    .small{font-size:12px;color:var(--muted);line-height:1.5}
+    .muted{color:var(--muted)}
+    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+    .actions button{width:100%;min-width:0}
+    .category-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+    }
+    .category{
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:14px;
+      background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.035));
+      min-height:98px;
+    }
+    .category .icon{font-size:24px;margin-bottom:8px}
+    .category .name{font-weight:900;margin-bottom:4px}
+    .category .count{font-size:12px;color:var(--muted)}
+    .tabs{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:8px;
+      margin-bottom:12px;
+    }
+    .tabs button.active{
+      border:0;
+      color:#07111f;
+      font-weight:900;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+    }
+    .chat-box{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      width:100%;
+      max-width:100%;
+      overflow-x:hidden;
+    }
+    .msg{
+      width:fit-content;
+      max-width:100%;
+      padding:13px 14px;
+      border-radius:19px;
+      line-height:1.65;
+      font-size:15px;
+      white-space:pre-wrap;
+      overflow-wrap:anywhere;
+      word-break:break-word;
+    }
+    .msg.user{
+      align-self:flex-end;
+      max-width:92%;
+      color:#07111f;
+      font-weight:800;
+      border-bottom-right-radius:7px;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+    }
+    .msg.ai{
+      align-self:flex-start;
+      border:1px solid var(--line);
+      border-bottom-left-radius:7px;
+      background:var(--card2);
+      box-shadow:var(--shadow);
+    }
+    .msg.system{
+      align-self:center;
+      border:1px dashed var(--line);
+      background:rgba(255,255,255,.05);
+      color:var(--muted);
+      box-shadow:none;
+      font-size:13px;
+    }
+    .sourcebox{
+      border-top:1px solid var(--line);
+      margin-top:10px;
+      padding-top:9px;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .pill{
+      display:inline-flex;
+      max-width:100%;
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:4px 8px;
+      margin:4px 5px 0 0;
+      background:rgba(255,255,255,.055);
+      font-size:12px;
+      color:var(--muted);
+      overflow-wrap:anywhere;
+      word-break:break-word;
+    }
+    .pill.ok{color:#bbf7d0;border-color:rgba(52,211,153,.28);background:rgba(52,211,153,.10)}
+    .pill.warn{color:#fde68a;border-color:rgba(251,191,36,.30);background:rgba(251,191,36,.10)}
+    .pill.danger{color:#fecdd3;border-color:rgba(251,113,133,.30);background:rgba(251,113,133,.10)}
+    .pill.accent{color:#bae6fd;border-color:rgba(56,189,248,.30);background:rgba(56,189,248,.10)}
+    .composer{
+      position:sticky;
+      bottom:76px;
+      z-index:12;
+      margin-top:14px;
+      display:grid;
+      grid-template-columns:1fr;
+      gap:9px;
+      background:rgba(5,8,22,.80);
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:10px;
+      backdrop-filter:blur(16px);
+    }
+    .composer textarea{min-height:74px;max-height:160px}
+    .composer button{width:100%}
+    .bottom-nav{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:0;
+      z-index:30;
+      width:100%;
+      max-width:1120px;
+      display:grid;
+      grid-template-columns:repeat(5,minmax(0,1fr));
+      gap:0;
+      padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+      background:rgba(5,8,22,.90);
+      backdrop-filter:blur(18px);
+      border-top:1px solid var(--line);
+    }
+    .bottom-nav button{
+      border:0;
+      background:transparent;
+      border-radius:15px;
+      padding:8px 4px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:3px;
+      color:var(--muted);
+      font-size:11px;
+      min-width:0;
+    }
+    .bottom-nav button .navicon{font-size:18px;line-height:1}
+    .bottom-nav button.active{
+      background:linear-gradient(135deg,rgba(56,189,248,.18),rgba(167,139,250,.20));
+      color:var(--text);
+    }
+    .list{display:grid;gap:10px}
+    .item{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:12px;
+      background:rgba(255,255,255,.052);
+      overflow:hidden;
+      overflow-wrap:anywhere;
+    }
+    .item.done{opacity:.62}
+    .item-head{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:8px;
+      align-items:start;
+    }
+    .item-title{font-weight:900;line-height:1.45}
+    .item-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+    .item-actions button{padding:8px 9px;font-size:12px}
+    .filterbar{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .template-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+    .template-card{
+      border:1px solid var(--line);
+      border-radius:20px;
+      background:rgba(255,255,255,.055);
+      padding:13px;
+    }
+    .template-title{font-weight:950;margin-bottom:6px}
+    dialog{
+      width:min(960px,calc(100vw - 20px));
+      max-width:calc(100vw - 20px);
+      max-height:88vh;
+      border:1px solid var(--line);
+      border-radius:24px;
+      color:var(--text);
+      background:#101827;
+      box-shadow:var(--shadow);
+      padding:0;
+      overflow:hidden;
+    }
+    dialog::backdrop{background:rgba(0,0,0,.58);backdrop-filter:blur(6px)}
+    .modal{
+      padding:15px;
+      max-height:88vh;
+      overflow:auto;
+      overflow-x:hidden;
+    }
+    .modal h2{font-size:18px;margin:0 0 10px}
+    .form{display:grid;gap:10px}
+    .form label{font-size:12px;color:var(--muted)}
+    .modal-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      margin-top:12px;
+    }
+    .modal-actions button{width:100%}
+    .empty{
+      text-align:center;
+      color:var(--muted);
+      border:1px dashed var(--line);
+      border-radius:18px;
+      padding:22px 12px;
+      line-height:1.65;
+    }
+    .notice{
+      border:1px dashed rgba(56,189,248,.35);
+      background:rgba(56,189,248,.08);
+      border-radius:18px;
+      padding:12px;
+      color:var(--muted);
+      line-height:1.6;
+    }
+    .hidden{display:none !important}
+    @media(min-width:720px){
+      h1{font-size:22px}
+      .sub{font-size:13px}
+      .grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .category-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+      .filterbar{grid-template-columns:1fr 150px 150px}
+      .template-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .composer{grid-template-columns:1fr 120px;align-items:end}
+      .composer button{height:74px}
     }
     @media(max-width:390px){
-      .toolbar,.quick-row{grid-template-columns:1fr}
-      .dashboard{grid-template-columns:1fr}
-      .topline{display:grid;grid-template-columns:1fr}
+      .grid,.category-grid,.actions,.tabs{grid-template-columns:1fr}
+      .top{display:grid;grid-template-columns:1fr}
       .badge{justify-self:start}
+      .item-head{grid-template-columns:1fr}
+      .item-actions{justify-content:flex-start}
       .modal-actions{grid-template-columns:1fr}
     }
-
   </style>
 </head>
 <body>
-<div class="app">
-  <header>
-    <div class="topline">
-      <div class="brand">
-        <div class="logo">AI</div>
-        <div>
-          <h1>MiniAI Local v8</h1>
-          <p class="subtitle">完全本機版：手機螢幕適配，知識庫、任務、提醒、備份都在本機。</p>
+  <div class="app">
+    <header>
+      <div class="top">
+        <div class="brand">
+          <div class="logo">AI</div>
+          <div>
+            <h1>MiniAI Local Final</h1>
+            <p class="sub">完全本機：知識、任務、模板、提醒、備份，不接大型模型。</p>
+          </div>
         </div>
+        <span class="badge" id="statusBadge">啟動中</span>
       </div>
-      <span class="badge" id="statusBadge">初始化中</span>
-    </div>
-    <div class="toolbar">
-      <button class="primary" id="installBtn" hidden>安裝到手機</button>
-      <button id="newChatBtn">新對話</button>
-      <button id="briefBtn">每日整理</button>
-      <button class="ok" id="taskBtn">任務</button>
-      <button id="addTaskBtn">新增任務</button>
-      <button class="warn" id="notifyBtn">啟用通知</button>
-      <button id="exportIcsBtn">任務匯出行事曆</button>
-      <button id="historyBtn">聊天紀錄</button>
-      <button id="learnBtn">新增知識</button>
-      <button class="ok" id="importDocBtn">匯入文件</button>
-      <button id="knowledgeBtn">知識庫</button>
-      <button id="exportBtn">匯出全部</button>
-      <button id="importBackupBtn">匯入備份</button>
-      <button id="settingsBtn">設定</button>
-      <button class="danger" id="resetBtn">重置</button>
-    </div>
-  </header>
+    </header>
 
-  <main>
-    <section class="dashboard">
-      <div class="stat"><div class="label">知識</div><div class="value" id="statKnowledge">0</div></div>
-      <div class="stat"><div class="label">任務</div><div class="value" id="statTasks">0</div></div>
-      <div class="stat"><div class="label">今日到期</div><div class="value" id="statDueToday">0</div></div>
-      <div class="stat"><div class="label">通知</div><div class="value" id="statNotify">未啟用</div></div>
-      <div class="stat"><div class="label">模式</div><div class="value">本機</div></div>
-    </section>
+    <main>
+      <section class="view active" id="homeView">
+        <div class="grid">
+          <div class="mini-card"><div class="stat-label">知識</div><div class="stat-value" id="statKnowledge">0</div></div>
+          <div class="mini-card"><div class="stat-label">未完成</div><div class="stat-value" id="statTasks">0</div></div>
+          <div class="mini-card"><div class="stat-label">今日到期</div><div class="stat-value" id="statDueToday">0</div></div>
+          <div class="mini-card"><div class="stat-label">通知</div><div class="stat-value" id="statNotify">未啟用</div></div>
+        </div>
 
-    <section class="mode-row">
-      <div class="mode-card">
-        <label>工作模式</label>
-        <select id="taskMode">
-          <option value="general">一般回答</option>
-          <option value="summary">摘要重點</option>
-          <option value="todo">轉成待辦</option>
-          <option value="study">學習卡片</option>
-          <option value="sop">整理成 SOP</option>
-          <option value="compare">比較與取捨</option>
-          <option value="assistant">私人助理建議</option>
+        <div class="section-title">
+          <h2>今日總覽</h2>
+          <button class="primary" id="homeBriefBtn">整理今日</button>
+        </div>
+        <div class="card" id="todayBriefCard">正在整理本機資料。</div>
+
+        <div class="section-title">
+          <h2>分類首頁</h2>
+          <button id="addCategoryNoteBtn">新增知識</button>
+        </div>
+        <div class="category-grid" id="categoryGrid"></div>
+
+        <div class="section-title"><h2>快速動作</h2></div>
+        <div class="actions">
+          <button class="ok" id="quickAddTaskBtn">新增任務</button>
+          <button id="quickAddKnowledgeBtn">新增知識</button>
+          <button class="warn" id="quickNotifyBtn">啟用通知</button>
+          <button id="quickBackupBtn">匯出備份</button>
+        </div>
+
+        <div class="section-title"><h2>本機狀態</h2></div>
+        <div class="notice">
+          這是完全本機版，不會呼叫 OpenAI、Gemini 或任何大型模型。資料存在手機瀏覽器 IndexedDB。換手機、清除網站資料前，請先匯出備份。
+        </div>
+      </section>
+
+      <section class="view" id="chatView">
+        <div class="tabs">
+          <button class="active" data-mode="general">一般</button>
+          <button data-mode="summary">摘要</button>
+          <button data-mode="todo">待辦</button>
+          <button data-mode="sop">SOP</button>
+          <button data-mode="study">學習</button>
+          <button data-mode="assistant">助理</button>
+        </div>
+        <div class="chat-box" id="chatBox"></div>
+        <form class="composer" id="chatForm">
+          <textarea id="chatInput" placeholder="輸入問題、筆記、任務或待整理內容。"></textarea>
+          <button class="primary" type="submit">送出</button>
+        </form>
+      </section>
+
+      <section class="view" id="tasksView">
+        <div class="section-title">
+          <h2>任務</h2>
+          <button class="primary" id="taskNewBtn">新增</button>
+        </div>
+        <div class="filterbar">
+          <input id="taskSearch" placeholder="搜尋任務" />
+          <select id="taskFilter">
+            <option value="open">未完成</option>
+            <option value="all">全部</option>
+            <option value="done">已完成</option>
+          </select>
+          <select id="taskSort">
+            <option value="due">到期日</option>
+            <option value="priority">優先級</option>
+            <option value="newest">最新</option>
+          </select>
+        </div>
+        <div class="actions" style="margin-bottom:10px">
+          <button id="exportIcsBtn">匯出行事曆 .ics</button>
+          <button class="warn" id="taskCheckBtn">檢查提醒</button>
+        </div>
+        <div class="list" id="taskList"></div>
+      </section>
+
+      <section class="view" id="knowledgeView">
+        <div class="section-title">
+          <h2>知識庫</h2>
+          <button class="primary" id="knowledgeNewBtn">新增</button>
+        </div>
+        <div class="filterbar">
+          <input id="knowledgeSearch" placeholder="搜尋知識" />
+          <select id="categoryFilter"></select>
+          <select id="knowledgeSort">
+            <option value="newest">最新</option>
+            <option value="oldest">最舊</option>
+            <option value="category">分類</option>
+          </select>
+        </div>
+        <div class="actions" style="margin-bottom:10px">
+          <button id="importDocBtn">匯入 TXT / MD / JSON</button>
+          <button id="exportKnowledgeBtn">匯出知識</button>
+        </div>
+        <div class="list" id="knowledgeList"></div>
+      </section>
+
+      <section class="view" id="templatesView">
+        <div class="section-title">
+          <h2>模板</h2>
+          <button class="primary" id="newFromTemplateBtn">使用模板</button>
+        </div>
+        <div class="template-grid" id="templateGrid"></div>
+      </section>
+
+      <section class="view" id="settingsView">
+        <div class="section-title"><h2>設定與備份</h2></div>
+        <div class="grid one">
+          <div class="card">
+            <h3 style="margin-top:0">資料備份</h3>
+            <p class="small">建議固定匯出備份。手機清除網站資料、換瀏覽器或重裝 App 前一定要備份。</p>
+            <div class="actions">
+              <button class="primary" id="exportAllBtn">匯出全部</button>
+              <button id="importAllBtn">匯入備份</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3 style="margin-top:0">通知與提醒</h3>
+            <p class="small">通知是本機提醒，通常需要 App 或瀏覽器曾開啟過才會穩定運作。</p>
+            <div class="actions">
+              <button class="warn" id="enableNotifyBtn">啟用通知</button>
+              <button id="runReminderBtn">立即檢查</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3 style="margin-top:0">安裝與重置</h3>
+            <div class="actions">
+              <button id="installBtn" hidden>安裝到手機</button>
+              <button class="danger" id="resetBtn">重置本機資料</button>
+            </div>
+          </div>
+          <div class="notice">
+            最終版原則：本機優先、手機順手、資料可備份、不依賴 API。需要大型模型時，可把本機資料手動複製到 ChatGPT 詢問。
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav">
+      <button class="active" data-view="homeView"><span class="navicon">🏠</span><span>首頁</span></button>
+      <button data-view="chatView"><span class="navicon">💬</span><span>整理</span></button>
+      <button data-view="tasksView"><span class="navicon">✅</span><span>任務</span></button>
+      <button data-view="knowledgeView"><span class="navicon">📚</span><span>知識</span></button>
+      <button data-view="settingsView"><span class="navicon">⚙️</span><span>設定</span></button>
+    </nav>
+  </div>
+
+  <dialog id="taskDialog">
+    <div class="modal">
+      <h2 id="taskDialogTitle">新增任務</h2>
+      <div class="form">
+        <label>任務內容</label>
+        <input id="taskTitle" placeholder="例如：備份 MiniAI 資料" />
+        <label>分類</label>
+        <select id="taskCategory"></select>
+        <label>到期日</label>
+        <input id="taskDue" type="date" />
+        <label>提醒時間</label>
+        <input id="taskReminder" type="datetime-local" />
+        <label>重複</label>
+        <select id="taskRepeat">
+          <option value="">不重複</option>
+          <option value="daily">每天</option>
+          <option value="weekly">每週</option>
+          <option value="monthly">每月</option>
         </select>
+        <label>優先級</label>
+        <select id="taskPriority">
+          <option value="medium">中</option>
+          <option value="high">高</option>
+          <option value="low">低</option>
+        </select>
+        <label>備註</label>
+        <textarea id="taskNote" placeholder="補充說明"></textarea>
       </div>
-    </section>
+      <div class="modal-actions">
+        <button id="cancelTaskBtn">取消</button>
+        <button class="primary" id="saveTaskBtn">儲存</button>
+      </div>
+    </div>
+  </dialog>
 
-    <section class="quick-row">
-      <button data-quick="整理我今天要做的事">整理今日任務</button>
-      <button data-quick="根據目前任務，幫我排優先順序">任務排序</button>
-      <button data-quick="把下面內容整理成 SOP：">SOP 模板</button>
-      <button data-quick="幫我把下面內容轉成待辦：">待辦模板</button>
-      <button data-quick="幫我摘要下面內容：">摘要模板</button>
-    </section>
+  <dialog id="knowledgeDialog">
+    <div class="modal">
+      <h2 id="knowledgeDialogTitle">新增知識</h2>
+      <div class="form">
+        <label>標題</label>
+        <input id="knowledgeTitle" placeholder="例如：我的 MiniAI 使用原則" />
+        <label>分類</label>
+        <select id="knowledgeCategory"></select>
+        <label>標籤，逗號分隔</label>
+        <input id="knowledgeTags" placeholder="例如：工具, 備份, 手機" />
+        <label>內容</label>
+        <textarea id="knowledgeContent" placeholder="輸入知識內容"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button id="cancelKnowledgeBtn">取消</button>
+        <button class="primary" id="saveKnowledgeBtn">儲存</button>
+      </div>
+    </div>
+  </dialog>
 
-    <section class="chat" id="chat"></section>
-  </main>
+  <dialog id="templateDialog">
+    <div class="modal">
+      <h2>使用模板</h2>
+      <div class="form">
+        <label>選擇模板</label>
+        <select id="templateSelect"></select>
+        <label>存到分類</label>
+        <select id="templateCategory"></select>
+        <label>標題</label>
+        <input id="templateTitle" placeholder="例如：今日健康紀錄" />
+        <label>內容</label>
+        <textarea id="templateContent"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button id="cancelTemplateBtn">取消</button>
+        <button class="primary" id="saveTemplateBtn">存成知識</button>
+      </div>
+    </div>
+  </dialog>
 
-  <footer>
-    <form class="composer" id="chatForm">
-      <textarea id="userInput" placeholder="輸入問題、筆記、任務或待整理內容。"></textarea>
-      <button class="primary" type="submit">送出</button>
-    </form>
-    <div class="hint">完全本機版：不會呼叫大型模型、不需要 Vercel 後端、不需要 API Key。</div>
-  </footer>
-</div>
+  <dialog id="docDialog">
+    <div class="modal">
+      <h2>匯入文件</h2>
+      <div class="notice">支援 TXT、Markdown、JSON。PDF 建議先轉成文字。長文件會自動切段存入本機知識庫。</div>
+      <div class="form" style="margin-top:10px">
+        <label>存到分類</label>
+        <select id="docCategory"></select>
+        <label>標籤，逗號分隔</label>
+        <input id="docTags" placeholder="例如：匯入, 筆記" />
+        <label>切段大小</label>
+        <select id="chunkSize">
+          <option value="500">短 500 字</option>
+          <option value="800" selected>中 800 字</option>
+          <option value="1200">長 1200 字</option>
+        </select>
+        <button class="primary" id="chooseDocBtn">選擇文件</button>
+        <p class="small" id="docStatus"></p>
+      </div>
+      <div class="modal-actions">
+        <button id="closeDocBtn">關閉</button>
+      </div>
+    </div>
+  </dialog>
 
-<dialog id="settingsDialog"><div class="modal">
-  <h2>設定</h2>
-  <div class="form-grid">
-    <label>每日整理偏好</label>
-    <select id="briefStyle"><option value="compact">簡潔版</option><option value="detailed">詳細版</option><option value="action">行動優先</option></select>
-    <label>任務提醒檢查間隔</label>
-    <select id="reminderInterval"><option value="15">15 分鐘</option><option value="30" selected>30 分鐘</option><option value="60">60 分鐘</option></select>
-  </div>
-  <div class="modal-actions"><button id="closeSettingsBtn">取消</button><button class="primary" id="saveSettingsBtn">儲存</button></div>
-</div></dialog>
+  <input type="file" id="docFile" accept=".txt,.md,.markdown,.json,text/plain,text/markdown,application/json" multiple hidden />
+  <input type="file" id="backupFile" accept="application/json,.json" hidden />
 
-<dialog id="taskDialog"><div class="modal">
-  <h2>任務管理</h2>
-  <div class="three-cols">
-    <input id="taskFilter" placeholder="搜尋任務" />
-    <select id="taskStatusFilter"><option value="all">全部</option><option value="open">未完成</option><option value="done">已完成</option></select>
-    <select id="taskSort"><option value="due">依到期日</option><option value="newest">最新在前</option><option value="priority">依優先級</option></select>
-  </div>
-  <p id="taskCount"></p><div class="list" id="taskList"></div>
-  <div class="modal-actions"><button id="closeTaskBtn">關閉</button></div>
-</div></dialog>
+  <script>
+    const DB_NAME="MiniAI_Local_Final";
+    const DB_VERSION=1;
+    const STORES={knowledge:"knowledge",tasks:"tasks",chats:"chats"};
+    const categories=[
+      {id:"general",name:"一般",icon:"🧭"},
+      {id:"health",name:"健康",icon:"🩺"},
+      {id:"stock",name:"股票",icon:"📈"},
+      {id:"travel",name:"旅遊",icon:"🧳"},
+      {id:"jade",name:"翡翠",icon:"💎"},
+      {id:"security",name:"安全",icon:"🔐"},
+      {id:"study",name:"學習",icon:"📖"},
+      {id:"life",name:"生活",icon:"🏡"}
+    ];
+    const priorityText={high:"高",medium:"中",low:"低"};
+    const repeatText={daily:"每天",weekly:"每週",monthly:"每月"};
+    const templates=[
+      {id:"stock",title:"股票操作紀錄",category:"stock",desc:"記錄買入理由、停損、目標、風險。",content:"股票名稱：\n代號：\n日期：\n買入價：\n數量：\n買入理由：\n停損價：\n目標價：\n風險：\n明日觀察：\n是否繼續持有："},
+      {id:"health",title:"健康症狀紀錄",category:"health",desc:"記錄疼痛、症狀、處理方式與是否需就醫。",content:"日期：\n症狀：\n位置：\n疼痛程度 0-10：\n持續多久：\n可能原因：\n今天處理：\n明天觀察：\n警示症狀：\n是否需要就醫："},
+      {id:"travel",title:"旅遊行程模板",category:"travel",desc:"整理時間、交通、證件、待辦。",content:"日期：\n地點：\n交通：\n出發時間：\n抵達時間：\n已訂項目：\n必帶物品：\n要辦的事：\n備註："},
+      {id:"sop",title:"SOP 模板",category:"general",desc:"把流程變成可執行步驟。",content:"SOP 名稱：\n目的：\n適用情境：\n準備物品：\n步驟：\n1. \n2. \n3. \n注意事項：\n完成檢查：\n☐ "},
+      {id:"todo",title:"待辦整理模板",category:"life",desc:"把雜事分成今天、之後、待確認。",content:"今天要做：\n☐ \n☐ \n\n之後再做：\n☐ \n☐ \n\n待確認：\n☐ "},
+      {id:"formula",title:"方劑 / 食療紀錄",category:"health",desc:"記錄材料、份量、目的、反應。",content:"名稱：\n日期：\n材料與份量：\n目的：\n適合狀況：\n不適合狀況：\n煮法：\n飲用 / 食用反應：\n下次調整："},
+      {id:"jade",title:"翡翠資料紀錄",category:"jade",desc:"記錄種水、料子、價格、判斷。",content:"名稱 / 物件：\n照片編號：\n料子：\n種水：\n顏色：\n瑕疵：\n尺寸：\n價格：\n判斷理由：\n是否值得："},
+      {id:"security",title:"帳號安全檢查",category:"security",desc:"記錄帳號、2FA、備份碼與安全狀態。",content:"帳號 / 服務：\n登入方式：\n是否啟用 2FA：\n安全金鑰：\n備份碼位置：\n最近檢查日期：\n風險：\n下一步："}
+    ];
+    const defaultKnowledge=[
+      {title:"MiniAI Local Final",category:"general",tags:["本機","說明"],content:"這是完全本機版，不連 OpenAI、Gemini，也不需要 API Key。知識、任務、聊天紀錄都存在手機瀏覽器 IndexedDB。"},
+      {title:"備份提醒",category:"security",tags:["備份"],content:"換手機、重裝瀏覽器、清除網站資料之前，請先到設定匯出全部備份。"},
+      {title:"如何新增知識",category:"general",tags:["教學"],content:"可以在知識頁新增，也可以匯入 TXT、Markdown、JSON。搜尋時會依標題、內容、標籤與分類比對。"},
+      {title:"本機整理限制",category:"general",tags:["限制"],content:"本機版只能做搜尋、摘要、模板整理與規則提醒，不會像大型模型一樣深度推理。"}
+    ];
+    const els={};
+    const $=s=>document.querySelector(s);
+    const $$=s=>Array.from(document.querySelectorAll(s));
+    [
+      "statusBadge","statKnowledge","statTasks","statDueToday","statNotify","todayBriefCard","categoryGrid",
+      "homeBriefBtn","addCategoryNoteBtn","quickAddTaskBtn","quickAddKnowledgeBtn","quickNotifyBtn","quickBackupBtn",
+      "chatBox","chatForm","chatInput","taskSearch","taskFilter","taskSort","taskList","taskNewBtn","exportIcsBtn","taskCheckBtn",
+      "knowledgeSearch","categoryFilter","knowledgeSort","knowledgeList","knowledgeNewBtn","importDocBtn","exportKnowledgeBtn",
+      "templateGrid","newFromTemplateBtn","exportAllBtn","importAllBtn","enableNotifyBtn","runReminderBtn","installBtn","resetBtn",
+      "taskDialog","taskDialogTitle","taskTitle","taskCategory","taskDue","taskReminder","taskRepeat","taskPriority","taskNote","cancelTaskBtn","saveTaskBtn",
+      "knowledgeDialog","knowledgeDialogTitle","knowledgeTitle","knowledgeCategory","knowledgeTags","knowledgeContent","cancelKnowledgeBtn","saveKnowledgeBtn",
+      "templateDialog","templateSelect","templateCategory","templateTitle","templateContent","cancelTemplateBtn","saveTemplateBtn",
+      "docDialog","docCategory","docTags","chunkSize","chooseDocBtn","docStatus","closeDocBtn","docFile","backupFile"
+    ].forEach(id=>els[id]=$("#"+id));
+    let db=null;
+    let currentMode=localStorage.getItem("miniai_final_mode")||"general";
+    let editTaskId=null;
+    let editKnowledgeId=null;
+    let deferredPrompt=null;
+    let reminderTimer=null;
+    const notified=new Set();
 
-<dialog id="addTaskDialog"><div class="modal">
-  <h2>新增任務</h2>
-  <div class="form-grid">
-    <label>任務內容</label><input id="taskTitle" placeholder="例如：整理 MiniAI 本機版" />
-    <label>到期日，可選</label><input id="taskDue" type="date" />
-    <label>提醒時間，可選</label><input id="taskReminder" type="datetime-local" />
-    <label>優先級</label><select id="taskPriority"><option value="medium">中</option><option value="high">高</option><option value="low">低</option></select>
-    <label>分類，可選</label><input id="taskCategory" placeholder="例如：AI, 工作, 學習" />
-    <label>備註，可選</label><textarea id="taskNote" placeholder="補充說明"></textarea>
-  </div>
-  <div class="modal-actions"><button id="cancelTaskBtn">取消</button><button class="primary" id="saveTaskBtn">儲存</button></div>
-</div></dialog>
-
-<dialog id="learnDialog"><div class="modal">
-  <h2>新增知識</h2>
-  <div class="form-grid">
-    <label>標題 / 問題</label><input id="learnQuestion" placeholder="例如：我的常用工具是什麼" />
-    <label>內容 / 答案</label><textarea id="learnAnswer" placeholder="例如：MiniAI Local 是完全本機版。"></textarea>
-    <label>標籤，可選</label><input id="learnTags" placeholder="例如：個人設定, 工具, AI" />
-  </div>
-  <div class="modal-actions"><button id="cancelLearnBtn">取消</button><button class="primary" id="saveLearnBtn">儲存</button></div>
-</div></dialog>
-
-<dialog id="docDialog"><div class="modal">
-  <h2>匯入文件</h2>
-  <p>支援 TXT、Markdown、JSON。PDF 請先轉成文字再匯入。</p>
-  <div class="drop-zone"><strong>選擇文件</strong><p>長文件會自動切成多個本機知識片段。</p><button class="ok" id="chooseDocBtn">選擇 TXT / MD / JSON</button></div>
-  <div class="form-grid">
-    <label>文件標籤，可選</label><input id="docTags" placeholder="例如：筆記, 工作, 學習" />
-    <label>切段大小</label><select id="chunkSize"><option value="500">短段 500 字</option><option value="800" selected>中段 800 字，推薦</option><option value="1200">長段 1200 字</option></select>
-  </div>
-  <p id="docImportStatus"></p>
-  <div class="modal-actions"><button id="closeDocBtn">關閉</button></div>
-</div></dialog>
-
-<dialog id="knowledgeDialog"><div class="modal">
-  <h2>知識庫</h2>
-  <div class="two-cols"><input id="knowledgeFilter" placeholder="搜尋知識" /><select id="sortMode"><option value="newest">最新在前</option><option value="oldest">最舊在前</option><option value="type">依類型排序</option></select></div>
-  <p id="knowledgeCount"></p><div class="list" id="knowledgeList"></div>
-  <div class="modal-actions"><button id="closeKnowledgeBtn">關閉</button></div>
-</div></dialog>
-
-<dialog id="historyDialog"><div class="modal">
-  <h2>聊天紀錄</h2>
-  <div class="two-cols"><input id="historyFilter" placeholder="搜尋聊天紀錄" /><select id="historySort"><option value="newest">最新在前</option><option value="oldest">最舊在前</option></select></div>
-  <p id="historyCount"></p><div class="list" id="historyList"></div>
-  <div class="modal-actions"><button id="closeHistoryBtn">關閉</button></div>
-</div></dialog>
-
-<input type="file" id="docFile" accept=".txt,.md,.markdown,.json,text/plain,text/markdown,application/json" multiple hidden />
-<input type="file" id="backupFile" accept="application/json,.json" hidden />
-
-<script>
-const DB_NAME="MiniAI_Local_v8",DB_VERSION=1,KNOWLEDGE="knowledge",CHATS="chats",TASKS="tasks";
-const taskLabels={general:"一般回答",summary:"摘要重點",todo:"轉成待辦",study:"學習卡片",sop:"整理成 SOP",compare:"比較與取捨",assistant:"私人助理建議"};
-const priorityLabels={high:"高",medium:"中",low:"低"};
-const defaultKnowledge=[
- {type:"qa",title:"你好",content:"你好，我是 MiniAI Local v8。這是完全本機版，不需要 API Key，也不會連接大型模型。",tags:["基本"]},
- {type:"qa",title:"這版會連網嗎",content:"不會呼叫大型模型後端。PWA 安裝與離線快取需要網站部署，但知識、任務、聊天都存在本機 IndexedDB。",tags:["隱私","本機"]},
- {type:"qa",title:"可以做什麼",content:"可以新增知識、匯入文字文件、搜尋本機知識、管理任務、匯出行事曆、做本機每日整理與備份。",tags:["使用說明"]},
- {type:"qa",title:"如何新增知識",content:"可以按新增知識，也可以輸入：學習：問題 => 答案。",tags:["使用說明"]}
-];
-const el={chat:q("#chat"),chatForm:q("#chatForm"),userInput:q("#userInput"),installBtn:q("#installBtn"),newChatBtn:q("#newChatBtn"),briefBtn:q("#briefBtn"),taskBtn:q("#taskBtn"),addTaskBtn:q("#addTaskBtn"),notifyBtn:q("#notifyBtn"),exportIcsBtn:q("#exportIcsBtn"),historyBtn:q("#historyBtn"),learnBtn:q("#learnBtn"),importDocBtn:q("#importDocBtn"),knowledgeBtn:q("#knowledgeBtn"),exportBtn:q("#exportBtn"),importBackupBtn:q("#importBackupBtn"),settingsBtn:q("#settingsBtn"),resetBtn:q("#resetBtn"),taskMode:q("#taskMode"),settingsDialog:q("#settingsDialog"),briefStyle:q("#briefStyle"),reminderInterval:q("#reminderInterval"),closeSettingsBtn:q("#closeSettingsBtn"),saveSettingsBtn:q("#saveSettingsBtn"),taskDialog:q("#taskDialog"),taskFilter:q("#taskFilter"),taskStatusFilter:q("#taskStatusFilter"),taskSort:q("#taskSort"),taskCount:q("#taskCount"),taskList:q("#taskList"),closeTaskBtn:q("#closeTaskBtn"),addTaskDialog:q("#addTaskDialog"),taskTitle:q("#taskTitle"),taskDue:q("#taskDue"),taskReminder:q("#taskReminder"),taskPriority:q("#taskPriority"),taskCategory:q("#taskCategory"),taskNote:q("#taskNote"),cancelTaskBtn:q("#cancelTaskBtn"),saveTaskBtn:q("#saveTaskBtn"),learnDialog:q("#learnDialog"),learnQuestion:q("#learnQuestion"),learnAnswer:q("#learnAnswer"),learnTags:q("#learnTags"),cancelLearnBtn:q("#cancelLearnBtn"),saveLearnBtn:q("#saveLearnBtn"),docDialog:q("#docDialog"),chooseDocBtn:q("#chooseDocBtn"),docFile:q("#docFile"),docTags:q("#docTags"),chunkSize:q("#chunkSize"),docImportStatus:q("#docImportStatus"),closeDocBtn:q("#closeDocBtn"),knowledgeDialog:q("#knowledgeDialog"),knowledgeFilter:q("#knowledgeFilter"),sortMode:q("#sortMode"),knowledgeCount:q("#knowledgeCount"),knowledgeList:q("#knowledgeList"),closeKnowledgeBtn:q("#closeKnowledgeBtn"),historyDialog:q("#historyDialog"),historyFilter:q("#historyFilter"),historySort:q("#historySort"),historyCount:q("#historyCount"),historyList:q("#historyList"),closeHistoryBtn:q("#closeHistoryBtn"),backupFile:q("#backupFile"),statusBadge:q("#statusBadge"),statKnowledge:q("#statKnowledge"),statTasks:q("#statTasks"),statDueToday:q("#statDueToday"),statNotify:q("#statNotify")};
-let db,deferredPrompt=null,reminderTimer=null,notifiedTaskIds=new Set();
-function q(s){return document.querySelector(s)}
-function getSettings(){return{taskMode:localStorage.getItem("miniai_local_v8_task_mode")||"assistant",briefStyle:localStorage.getItem("miniai_local_v8_brief_style")||"action",reminderInterval:Number(localStorage.getItem("miniai_local_v8_reminder_interval")||30)}}
-function applySettingsToUI(){const s=getSettings();el.taskMode.value=s.taskMode;el.briefStyle.value=s.briefStyle;el.reminderInterval.value=String(s.reminderInterval)}
-function saveSettingsFromUI(){localStorage.setItem("miniai_local_v8_task_mode",el.taskMode.value);localStorage.setItem("miniai_local_v8_brief_style",el.briefStyle.value);localStorage.setItem("miniai_local_v8_reminder_interval",el.reminderInterval.value)}
-function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains(KNOWLEDGE)){const s=d.createObjectStore(KNOWLEDGE,{keyPath:"id",autoIncrement:true});s.createIndex("createdAt","createdAt");s.createIndex("type","type")}if(!d.objectStoreNames.contains(CHATS)){const s=d.createObjectStore(CHATS,{keyPath:"id",autoIncrement:true});s.createIndex("createdAt","createdAt");s.createIndex("taskMode","taskMode")}if(!d.objectStoreNames.contains(TASKS)){const s=d.createObjectStore(TASKS,{keyPath:"id",autoIncrement:true});s.createIndex("createdAt","createdAt");s.createIndex("dueDate","dueDate");s.createIndex("status","status");s.createIndex("priority","priority");s.createIndex("reminderAt","reminderAt")}};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
-function store(name,mode="readonly"){return db.transaction(name,mode).objectStore(name)}
-function getAll(name){return new Promise((res,rej)=>{const r=store(name).getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error)})}
-function addRecord(name,item){return new Promise((res,rej)=>{const now=new Date().toISOString();const r=store(name,"readwrite").add({...item,createdAt:item.createdAt||now,updatedAt:now});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
-function putRecord(name,item){return new Promise((res,rej)=>{const r=store(name,"readwrite").put({...item,updatedAt:new Date().toISOString()});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
-function deleteRecord(name,id){return new Promise((res,rej)=>{const r=store(name,"readwrite").delete(id);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
-function clearStore(name){return new Promise((res,rej)=>{const r=store(name,"readwrite").clear();r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
-async function seedIfNeeded(){if((await getAll(KNOWLEDGE)).length)return;for(const item of defaultKnowledge)await addKnowledge(item)}
-function normalizeTags(tags){if(typeof tags==="string")return tags.split(",").map(t=>t.trim()).filter(Boolean);return Array.isArray(tags)?tags.map(t=>String(t).trim()).filter(Boolean):[]}
-async function addKnowledge(item){return addRecord(KNOWLEDGE,{type:item.type||"qa",title:(item.title||item.question||"").trim(),content:(item.content||item.answer||"").trim(),tags:normalizeTags(item.tags||[]),sourceName:item.sourceName||"",chunkIndex:Number.isInteger(item.chunkIndex)?item.chunkIndex:null})}
-async function addTask(item){return addRecord(TASKS,{title:(item.title||"").trim(),note:(item.note||"").trim(),dueDate:item.dueDate||"",reminderAt:item.reminderAt||"",priority:item.priority||"medium",category:item.category||"",status:item.status||"open"})}
-function cleanText(t){return String(t||"").replace(/\r\n/g,"\n").replace(/\t/g," ").replace(/[ ]{2,}/g," ").replace(/\n{3,}/g,"\n\n").trim()}
-function splitChunks(text,max=800){const c=cleanText(text);if(!c)return[];const ps=c.split(/\n\s*\n/).map(p=>p.trim()).filter(Boolean),out=[];let cur="";for(const p of ps){if((cur+"\n\n"+p).length<=max)cur=cur?cur+"\n\n"+p:p;else{if(cur)out.push(cur);if(p.length<=max)cur=p;else{for(let i=0;i<p.length;i+=max)out.push(p.slice(i,i+max));cur=""}}}if(cur)out.push(cur);return out}
-function tokens(t){const l=String(t).toLowerCase().trim(),en=l.match(/[a-zA-Z0-9_]+/g)||[],zh=l.match(/[\u4e00-\u9fff]/g)||[],bi=[];for(let i=0;i<zh.length-1;i++)bi.push(zh[i]+zh[i+1]);return[...en,...zh,...bi]}
-function cosine(a,b){const ta=tokens(a),tb=tokens(b);if(!ta.length||!tb.length)return 0;const ca={},cb={};ta.forEach(x=>ca[x]=(ca[x]||0)+1);tb.forEach(x=>cb[x]=(cb[x]||0)+1);const keys=new Set([...Object.keys(ca),...Object.keys(cb)]);let dot=0,na=0,nb=0;keys.forEach(k=>{const va=ca[k]||0,vb=cb[k]||0;dot+=va*vb;na+=va*va;nb+=vb*vb});return dot/(Math.sqrt(na)*Math.sqrt(nb))}
-function scoreKnowledge(q,item){const title=item.title||"",body=item.content||"",tags=(item.tags||[]).join(" "),source=item.sourceName||"",all=[title,body,tags,source].join(" ");let s=cosine(q,title)*.55+cosine(q,body)*.30+cosine(q,all)*.15;const x=q.toLowerCase().trim();if(title.toLowerCase().includes(x))s+=.35;if(body.toLowerCase().includes(x))s+=.18;if(tags.toLowerCase().includes(x))s+=.18;if(source.toLowerCase().includes(x))s+=.12;return s}
-async function findLocal(q,limit=5){return(await getAll(KNOWLEDGE)).map(item=>({item,score:scoreKnowledge(q,item)})).filter(r=>r.score>0).sort((a,b)=>b.score-a.score).slice(0,limit)}
-function excerpt(t,max=520){const c=cleanText(t);return c.length<=max?c:c.slice(0,max).trim()+"…"}
-function itemTitle(item){return item.type==="doc_chunk"?`${item.sourceName||item.title||"文件"}${Number.isInteger(item.chunkIndex)?" #"+(item.chunkIndex+1):""}`:item.title||"未命名知識"}
-function todayISO(){return new Date().toISOString().slice(0,10)}
-function isDueToday(d){return d&&d===todayISO()}function isOverdue(d){return d&&d<todayISO()}
-function summarizeText(text, mode){
-  const lines = cleanText(text).split(/\n+/).map(s=>s.trim()).filter(Boolean);
-  const sentences = cleanText(text).split(/[。！？!?]\s*/).map(s=>s.trim()).filter(Boolean);
-  const picks = (sentences.length?sentences:lines).slice(0,7);
-  if(mode==="summary") return ["本機摘要：","",...picks.map((s,i)=>`${i+1}. ${s}`)].join("\n");
-  if(mode==="todo") return ["本機待辦：","",...picks.map((s,i)=>`☐ ${s}`)].join("\n");
-  if(mode==="sop") return ["本機 SOP 草稿：","","目的：整理輸入內容為可執行流程。","","步驟：",...picks.map((s,i)=>`${i+1}. ${s}`),"","檢查：","☐ 是否有下一步","☐ 是否有負責人","☐ 是否有期限"].join("\n");
-  if(mode==="study") return ["本機學習卡片：","",...picks.map((s,i)=>`Q${i+1}：這段重點是什麼？\nA${i+1}：${s}`).join("\n\n")].join("\n");
-  if(mode==="compare") return ["本機比較提示：","",...picks.map((s,i)=>`選項 ${i+1}：${s}\n優點：待補\n缺點：待補`).join("\n\n")].join("\n");
-  return null;
-}
-function localAnswer(query,matches){
-  const mode=getSettings().taskMode;
-  const transformed=summarizeText(query,mode);
-  if(transformed && query.length>15) return {answer:transformed,sources:[]};
-  if(!matches.length||matches[0].score<.22)return{answer:"我在本機知識庫裡找不到足夠相關的內容。你可以匯入文件，或新增知識。\n\n完全本機版不會呼叫大型模型，所以回答能力會比雲端模型簡單。",sources:[]};
-  const good=matches.filter(m=>m.score>=.22).slice(0,3);
-  return{answer:["我在本機找到這些相關內容：","",...good.map((m,i)=>`${i+1}. ${itemTitle(m.item)}\n${excerpt(m.item.content,380)}`)].join("\n"),sources:good.map(m=>m.item)}
-}
-async function reply(input){
-  const text=input.trim(); if(!text)return{answer:"你還沒輸入內容。",sources:[]};
-  if(text.startsWith("學習：")||text.startsWith("學習:")){
-    const c=text.replace(/^學習[:：]/,"").trim(); if(!c.includes("=>"))return{answer:"格式不對。請用：學習：問題 => 答案",sources:[]};
-    const [question,...parts]=c.split("=>"),answer=parts.join("=>"); if(!question.trim()||!answer.trim())return{answer:"問題和答案都不能空白。",sources:[]};
-    await addKnowledge({type:"qa",title:question,content:answer,tags:["使用者新增"]}); await refreshStats(); return{answer:"我學會了。這筆知識已儲存在本機。",sources:[]}
-  }
-  const matches=await findLocal(text,5); return localAnswer(text,matches);
-}
-async function generateDailyBrief(){
-  const tasks=await getAll(TASKS),chats=await getAll(CHATS),open=tasks.filter(t=>t.status!=="done"),due=open.filter(t=>isDueToday(t.dueDate)),over=open.filter(t=>isOverdue(t.dueDate));
-  const priority=[...over,...due,...open.filter(t=>!isDueToday(t.dueDate)&&!isOverdue(t.dueDate))].slice(0,8);
-  return ["每日整理｜本機版","",`未完成任務：${open.length} 件`,`今日到期：${due.length} 件`,`已逾期：${over.length} 件`,`聊天紀錄：${chats.length} 筆`,"","建議優先處理：",...(priority.length?priority.map((t,i)=>`${i+1}. ${t.title}${t.dueDate?`｜${t.dueDate}`:""}｜優先級：${priorityLabels[t.priority]||t.priority}`):["目前沒有未完成任務。"]),"","提醒：這是本機規則整理，不會呼叫大型模型。"].join("\n")
-}
-function addMessage(role,text,sources=[]){const msg=document.createElement("div");msg.className=`msg ${role}`;msg.textContent=text;if(role==="ai"&&sources.length){const box=document.createElement("div");box.className="sources";box.textContent="參考知識：";sources.slice(0,5).forEach(source=>{const pill=document.createElement("span");pill.className="source-pill";pill.textContent=itemTitle(source);box.appendChild(pill)});msg.appendChild(box)}el.chat.appendChild(msg);requestAnimationFrame(()=>window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"}))}
-async function saveChat(userText,aiText,sources=[]){await addRecord(CHATS,{userText,aiText,taskMode:getSettings().taskMode,answerEngine:"local",sourceTitles:sources.map(itemTitle).slice(0,5)})}
-async function refreshStats(){const knowledge=await getAll(KNOWLEDGE),chats=await getAll(CHATS),tasks=await getAll(TASKS),open=tasks.filter(t=>t.status!=="done"),dueToday=open.filter(t=>isDueToday(t.dueDate)).length;el.statKnowledge.textContent=knowledge.length;el.statTasks.textContent=open.length;el.statDueToday.textContent=dueToday;el.statNotify.textContent=("Notification"in window)?Notification.permission:"不支援";el.statusBadge.textContent=`本機｜知識 ${knowledge.length}｜任務 ${open.length}`}
-function escapeHTML(text){return String(text).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
-function renderKnowledge(list){el.knowledgeList.innerHTML="";el.knowledgeCount.textContent=`顯示 ${list.length} 筆知識。`;if(!list.length){el.knowledgeList.innerHTML='<div class="empty">沒有符合的知識。</div>';return}list.forEach(item=>{const div=document.createElement("div");div.className="item";div.innerHTML=`<div class="item-head"><div><div class="item-title">${escapeHTML(itemTitle(item))}</div><div class="small">${new Date(item.createdAt||Date.now()).toLocaleString()}</div></div><button class="danger" data-delete="${item.id}">刪除</button></div><div>${escapeHTML(excerpt(item.content,520))}</div><div class="tag-row"><span class="tag mode">${item.type==="doc_chunk"?"文件片段":"知識"}</span>${(item.tags||[]).map(t=>`<span class="tag">${escapeHTML(t)}</span>`).join("")}</div>`;div.querySelector("[data-delete]").onclick=async()=>{if(confirm("確定刪除這筆知識嗎？")){await deleteRecord(KNOWLEDGE,item.id);await openKnowledgeManager();await refreshStats()}};el.knowledgeList.appendChild(div)})}
-async function openKnowledgeManager(){let data=await getAll(KNOWLEDGE);const k=el.knowledgeFilter.value.trim().toLowerCase();if(k)data=data.filter(item=>[item.title,item.content,item.sourceName,...(item.tags||[])].join(" ").toLowerCase().includes(k));if(el.sortMode.value==="newest")data.sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));else if(el.sortMode.value==="oldest")data.sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt)));else data.sort((a,b)=>String(a.type).localeCompare(String(b.type)));renderKnowledge(data)}
-function renderHistory(list){el.historyList.innerHTML="";el.historyCount.textContent=`顯示 ${list.length} 筆聊天紀錄。`;if(!list.length){el.historyList.innerHTML='<div class="empty">沒有符合的聊天紀錄。</div>';return}list.forEach(chat=>{const div=document.createElement("div");div.className="item";div.innerHTML=`<div class="item-head"><div><div class="item-title">${escapeHTML(excerpt(chat.userText,80))}</div><div class="small">${new Date(chat.createdAt||Date.now()).toLocaleString()}</div></div><button class="danger" data-delete="${chat.id}">刪除</button></div><div class="small">模式：${escapeHTML(taskLabels[chat.taskMode]||chat.taskMode||"一般")}｜本機</div><div style="margin-top:8px">${escapeHTML(excerpt(chat.aiText,520))}</div><div class="tag-row">${(chat.sourceTitles||[]).map(t=>`<span class="tag">${escapeHTML(t)}</span>`).join("")}</div>`;div.onclick=e=>{if(e.target.matches("button"))return;addMessage("user",chat.userText);addMessage("ai",chat.aiText);el.historyDialog.close()};div.querySelector("[data-delete]").onclick=async()=>{if(confirm("確定刪除這筆聊天紀錄嗎？")){await deleteRecord(CHATS,chat.id);await openHistory();await refreshStats()}};el.historyList.appendChild(div)})}
-async function openHistory(){let data=await getAll(CHATS);const k=el.historyFilter.value.trim().toLowerCase();if(k)data=data.filter(chat=>[chat.userText,chat.aiText,chat.taskMode,...(chat.sourceTitles||[])].join(" ").toLowerCase().includes(k));if(el.historySort.value==="newest")data.sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));else data.sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt)));renderHistory(data)}
-function renderTasks(list){el.taskList.innerHTML="";el.taskCount.textContent=`顯示 ${list.length} 件任務。`;if(!list.length){el.taskList.innerHTML='<div class="empty">沒有任務。</div>';return}list.forEach(task=>{const div=document.createElement("div");div.className=`item ${task.status==="done"?"done":""}`;const dueClass=task.status==="done"?"ok":(isOverdue(task.dueDate)?"warn":(isDueToday(task.dueDate)?"warn":"mode"));div.innerHTML=`<div class="item-head"><div><div class="item-title">${task.status==="done"?"✓ ":""}${escapeHTML(task.title)}</div><div class="small">${escapeHTML(task.note||"")}</div></div><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="ok" data-toggle="${task.id}">${task.status==="done"?"恢復":"完成"}</button><button class="danger" data-delete="${task.id}">刪除</button></div></div><div class="tag-row"><span class="tag ${dueClass}">${task.dueDate?escapeHTML(task.dueDate):"無到期日"}</span>${task.reminderAt?`<span class="tag warn">提醒：${escapeHTML(task.reminderAt.replace("T"," "))}</span>`:""}<span class="tag mode">優先級：${escapeHTML(priorityLabels[task.priority]||task.priority)}</span>${task.category?`<span class="tag">${escapeHTML(task.category)}</span>`:""}</div>`;div.querySelector("[data-toggle]").onclick=async()=>{task.status=task.status==="done"?"open":"done";await putRecord(TASKS,task);await openTasks();await refreshStats()};div.querySelector("[data-delete]").onclick=async()=>{if(confirm("確定刪除這件任務嗎？")){await deleteRecord(TASKS,task.id);await openTasks();await refreshStats()}};el.taskList.appendChild(div)})}
-async function openTasks(){let data=await getAll(TASKS);const k=el.taskFilter.value.trim().toLowerCase(),status=el.taskStatusFilter.value;if(k)data=data.filter(task=>[task.title,task.note,task.category,task.priority,task.dueDate,task.reminderAt].join(" ").toLowerCase().includes(k));if(status!=="all")data=data.filter(task=>status==="done"?task.status==="done":task.status!=="done");if(el.taskSort.value==="due")data.sort((a,b)=>(a.dueDate||"9999-99-99").localeCompare(b.dueDate||"9999-99-99"));else if(el.taskSort.value==="priority"){const order={high:0,medium:1,low:2};data.sort((a,b)=>(order[a.priority]??9)-(order[b.priority]??9))}else data.sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));renderTasks(data)}
-async function importDocs(files){if(!files||!files.length)return;const tags=normalizeTags(el.docTags.value||["文件"]),size=Number(el.chunkSize.value||800);let added=0;for(const file of files){el.docImportStatus.textContent=`處理中：${file.name}`;try{const text=await file.text();if(file.name.toLowerCase().endsWith(".json")){const parsed=JSON.parse(text),rows=Array.isArray(parsed)?parsed:(parsed.knowledge||[]);if(Array.isArray(rows)&&rows.length){for(const row of rows){if(!row.title&&!row.question&&!row.content&&!row.answer)continue;await addKnowledge({type:row.type||(row.content?"doc_chunk":"qa"),title:row.title||row.question||row.sourceName||file.name,content:row.content||row.answer||"",tags:[...normalizeTags(row.tags||[]),...tags],sourceName:row.sourceName||file.name,chunkIndex:Number.isInteger(row.chunkIndex)?row.chunkIndex:null});added++}}}else{const chunks=splitChunks(text,size);for(let i=0;i<chunks.length;i++){await addKnowledge({type:"doc_chunk",title:file.name,content:chunks[i],tags,sourceName:file.name,chunkIndex:i});added++}}}catch(error){addMessage("system",`匯入失敗：${file.name}`)}}el.docImportStatus.textContent=`匯入完成：新增 ${added} 筆知識。`;await refreshStats();addMessage("system",`文件匯入完成：新增 ${added} 筆本機知識。`)}
-function showNotification(title,body){if(!("Notification"in window)||Notification.permission!=="granted")return;try{new Notification(title,{body,tag:"miniai-task"})}catch(e){}}
-async function checkDueTasks(silent=false){const tasks=await getAll(TASKS),now=new Date();const due=tasks.filter(t=>t.status!=="done"&&(isDueToday(t.dueDate)||isOverdue(t.dueDate)));const reminders=tasks.filter(t=>t.status!=="done"&&t.reminderAt&&new Date(t.reminderAt)<=now&&!notifiedTaskIds.has(t.id));if(due.length&&!silent)addMessage("system",`任務提醒：你有 ${due.length} 件任務到期或逾期。`);for(const task of reminders){notifiedTaskIds.add(task.id);showNotification("MiniAI 任務提醒",task.title);if(!silent)addMessage("system",`提醒：${task.title}`)}await refreshStats()}
-function restartReminderTimer(){if(reminderTimer)clearInterval(reminderTimer);const mins=getSettings().reminderInterval;reminderTimer=setInterval(()=>checkDueTasks(true),mins*60*1000)}
-function formatIcsDate(date){return date.replaceAll("-","")}
-function escapeIcs(text){return String(text||"").replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\n/g,"\\n")}
-async function exportTasksIcs(){const tasks=(await getAll(TASKS)).filter(t=>t.status!=="done"&&t.dueDate);if(!tasks.length){alert("沒有可匯出的未完成到期任務。");return}const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//MiniAI Local v8//Tasks//ZH-TW"];for(const t of tasks){const uid=`miniai-local-${t.id}-${location.hostname||"local"}`;lines.push("BEGIN:VEVENT",`UID:${uid}`,`DTSTAMP:${new Date().toISOString().replace(/[-:]/g,"").split(".")[0]}Z`,`DTSTART;VALUE=DATE:${formatIcsDate(t.dueDate)}`,`SUMMARY:${escapeIcs(t.title)}`,`DESCRIPTION:${escapeIcs([t.note,t.category?`分類：${t.category}`:"",`優先級：${priorityLabels[t.priority]||t.priority}`].filter(Boolean).join("\\n"))}`,"END:VEVENT")}lines.push("END:VCALENDAR");const blob=new Blob([lines.join("\r\n")],{type:"text/calendar"});const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=`miniai-local-tasks-${todayISO()}.ics`;a.click();URL.revokeObjectURL(url)}
-el.chatForm.onsubmit=async event=>{event.preventDefault();const text=el.userInput.value.trim();if(!text)return;saveSettingsFromUI();await refreshStats();addMessage("user",text);el.userInput.value="";const result=await reply(text);addMessage("ai",result.answer,result.sources);await saveChat(text,result.answer,result.sources);await refreshStats()};
-document.querySelectorAll("[data-quick]").forEach(btn=>{btn.onclick=()=>{const text=btn.getAttribute("data-quick");el.userInput.value=text+(text.endsWith("：")?"\n":"");el.userInput.focus()}});
-el.taskMode.onchange=async()=>{saveSettingsFromUI();await refreshStats()};
-el.newChatBtn.onclick=()=>{el.chat.innerHTML="";addMessage("ai","新對話已開始。這是完全本機版，可搜尋知識、整理文字與管理任務。")};
-el.briefBtn.onclick=async()=>{saveSettingsFromUI();const brief=await generateDailyBrief();addMessage("ai",brief);await saveChat("每日整理",brief,[]);await refreshStats()};
-el.taskBtn.onclick=async()=>{await openTasks();el.taskDialog.showModal()};el.taskFilter.oninput=openTasks;el.taskStatusFilter.onchange=openTasks;el.taskSort.onchange=openTasks;el.closeTaskBtn.onclick=()=>el.taskDialog.close();
-el.addTaskBtn.onclick=()=>{el.taskTitle.value="";el.taskDue.value="";el.taskReminder.value="";el.taskPriority.value="medium";el.taskCategory.value="";el.taskNote.value="";el.addTaskDialog.showModal()};el.cancelTaskBtn.onclick=()=>el.addTaskDialog.close();el.saveTaskBtn.onclick=async()=>{if(!el.taskTitle.value.trim()){alert("任務內容不能空白。");return}await addTask({title:el.taskTitle.value,dueDate:el.taskDue.value,reminderAt:el.taskReminder.value,priority:el.taskPriority.value,category:el.taskCategory.value,note:el.taskNote.value});await refreshStats();el.addTaskDialog.close();addMessage("system","任務已新增。")};
-el.notifyBtn.onclick=async()=>{if(!("Notification"in window)){alert("此瀏覽器不支援通知。");return}const p=await Notification.requestPermission();await refreshStats();if(p==="granted"){showNotification("MiniAI 通知已啟用","任務提醒會在 App 運作時觸發。");addMessage("system","通知已啟用。")}else addMessage("system","通知未啟用。")};
-el.exportIcsBtn.onclick=exportTasksIcs;
-el.historyBtn.onclick=async()=>{await openHistory();el.historyDialog.showModal()};el.historyFilter.oninput=openHistory;el.historySort.onchange=openHistory;el.closeHistoryBtn.onclick=()=>el.historyDialog.close();
-el.settingsBtn.onclick=()=>{applySettingsToUI();el.settingsDialog.showModal()};el.closeSettingsBtn.onclick=()=>el.settingsDialog.close();el.saveSettingsBtn.onclick=async()=>{saveSettingsFromUI();restartReminderTimer();await refreshStats();el.settingsDialog.close();addMessage("system","設定已儲存。")};
-el.learnBtn.onclick=()=>{el.learnQuestion.value="";el.learnAnswer.value="";el.learnTags.value="";el.learnDialog.showModal()};el.cancelLearnBtn.onclick=()=>el.learnDialog.close();el.saveLearnBtn.onclick=async()=>{if(!el.learnQuestion.value.trim()||!el.learnAnswer.value.trim()){alert("標題和內容都要填。");return}await addKnowledge({type:"qa",title:el.learnQuestion.value,content:el.learnAnswer.value,tags:el.learnTags.value});await refreshStats();el.learnDialog.close();addMessage("system","新增知識完成。")};
-el.importDocBtn.onclick=()=>{el.docImportStatus.textContent="";el.docDialog.showModal()};el.chooseDocBtn.onclick=()=>el.docFile.click();el.docFile.onchange=async()=>{await importDocs(el.docFile.files);el.docFile.value=""};el.closeDocBtn.onclick=()=>el.docDialog.close();
-el.knowledgeBtn.onclick=async()=>{await openKnowledgeManager();el.knowledgeDialog.showModal()};el.knowledgeFilter.oninput=openKnowledgeManager;el.sortMode.onchange=openKnowledgeManager;el.closeKnowledgeBtn.onclick=()=>el.knowledgeDialog.close();
-el.exportBtn.onclick=async()=>{const knowledge=await getAll(KNOWLEDGE),chats=await getAll(CHATS),tasks=await getAll(TASKS),payload={app:"MiniAI Local v8",exportedAt:new Date().toISOString(),settings:getSettings(),knowledge,chats,tasks};const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=`miniai-local-v8-backup-${todayISO()}.json`;a.click();URL.revokeObjectURL(url)};
-el.importBackupBtn.onclick=()=>el.backupFile.click();el.backupFile.onchange=async()=>{const file=el.backupFile.files[0];if(!file)return;try{const parsed=JSON.parse(await file.text()),knowledge=Array.isArray(parsed)?parsed:(parsed.knowledge||[]),chats=parsed.chats||[],tasks=parsed.tasks||[];let kCount=0,cCount=0,tCount=0;for(const row of knowledge){if(!row.title&&!row.question&&!row.content&&!row.answer)continue;await addKnowledge({type:row.type||(row.content?"doc_chunk":"qa"),title:row.title||row.question||row.sourceName||"",content:row.content||row.answer||"",tags:row.tags||["匯入"],sourceName:row.sourceName||"",chunkIndex:Number.isInteger(row.chunkIndex)?row.chunkIndex:null});kCount++}if(Array.isArray(chats)){for(const chat of chats){if(!chat.userText&&!chat.aiText)continue;await addRecord(CHATS,{userText:chat.userText||"",aiText:chat.aiText||"",taskMode:chat.taskMode||"general",answerEngine:"local",sourceTitles:chat.sourceTitles||[]});cCount++}}if(Array.isArray(tasks)){for(const task of tasks){if(!task.title)continue;await addTask({title:task.title,note:task.note||"",dueDate:task.dueDate||"",reminderAt:task.reminderAt||"",priority:task.priority||"medium",category:task.category||"",status:task.status||"open"});tCount++}}await refreshStats();addMessage("system",`匯入完成：新增 ${kCount} 筆知識、${cCount} 筆聊天、${tCount} 件任務。`)}catch(error){alert("匯入失敗。請確認 JSON 格式。")}finally{el.backupFile.value=""}};
-el.resetBtn.onclick=async()=>{if(!confirm("確定重置嗎？這會刪除知識庫、聊天紀錄與任務。"))return;await clearStore(KNOWLEDGE);await clearStore(CHATS);await clearStore(TASKS);for(const item of defaultKnowledge)await addKnowledge(item);await refreshStats();el.chat.innerHTML="";addMessage("system","MiniAI 已重置。")};
-window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();deferredPrompt=event;el.installBtn.hidden=false});el.installBtn.onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;el.installBtn.hidden=true};
-async function boot(){try{db=await openDB();applySettingsToUI();await seedIfNeeded();await refreshStats();restartReminderTimer();addMessage("ai","MiniAI Local v8 已啟動。這是完全本機版，不需要 OpenAI、Gemini、API Key 或後端。");if("serviceWorker"in navigator){try{await navigator.serviceWorker.register("./service-worker.js");addMessage("system","離線快取已準備好。若剛升級，請重新整理一次。")}catch(error){addMessage("system","Service Worker 註冊失敗。若是直接用檔案開啟，這是正常限制。部署到 HTTPS 後即可啟用。")}}await checkDueTasks(false)}catch(error){console.error(error);addMessage("system","初始化失敗。請確認瀏覽器支援 IndexedDB。")}}
-boot();
-</script>
+    function openDB(){
+      return new Promise((resolve,reject)=>{
+        const req=indexedDB.open(DB_NAME,DB_VERSION);
+        req.onupgradeneeded=()=>{
+          const d=req.result;
+          if(!d.objectStoreNames.contains(STORES.knowledge)){
+            const s=d.createObjectStore(STORES.knowledge,{keyPath:"id",autoIncrement:true});
+            s.createIndex("category","category");
+            s.createIndex("createdAt","createdAt");
+          }
+          if(!d.objectStoreNames.contains(STORES.tasks)){
+            const s=d.createObjectStore(STORES.tasks,{keyPath:"id",autoIncrement:true});
+            s.createIndex("status","status");
+            s.createIndex("dueDate","dueDate");
+            s.createIndex("category","category");
+            s.createIndex("priority","priority");
+          }
+          if(!d.objectStoreNames.contains(STORES.chats)){
+            const s=d.createObjectStore(STORES.chats,{keyPath:"id",autoIncrement:true});
+            s.createIndex("createdAt","createdAt");
+          }
+        };
+        req.onsuccess=()=>resolve(req.result);
+        req.onerror=()=>reject(req.error);
+      });
+    }
+    function store(name,mode="readonly"){return db.transaction(name,mode).objectStore(name)}
+    function all(name){return new Promise((res,rej)=>{const r=store(name).getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error)})}
+    function get(name,id){return new Promise((res,rej)=>{const r=store(name).get(Number(id));r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+    function add(name,item){return new Promise((res,rej)=>{const now=new Date().toISOString();const r=store(name,"readwrite").add({...item,createdAt:item.createdAt||now,updatedAt:now});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+    function put(name,item){return new Promise((res,rej)=>{const r=store(name,"readwrite").put({...item,updatedAt:new Date().toISOString()});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+    function del(name,id){return new Promise((res,rej)=>{const r=store(name,"readwrite").delete(Number(id));r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+    function clear(name){return new Promise((res,rej)=>{const r=store(name,"readwrite").clear();r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+    function escapeHTML(v){return String(v||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+    function clean(v){return String(v||"").replace(/\r\n/g,"\n").replace(/\n{3,}/g,"\n\n").trim()}
+    function tags(v){return Array.isArray(v)?v.map(x=>String(x).trim()).filter(Boolean):String(v||"").split(",").map(x=>x.trim()).filter(Boolean)}
+    function today(){return new Date().toISOString().slice(0,10)}
+    function catName(id){return (categories.find(c=>c.id===id)||categories[0]).name}
+    function catIcon(id){return (categories.find(c=>c.id===id)||categories[0]).icon}
+    function isDueToday(d){return d&&d===today()}
+    function isOverdue(d){return d&&d<today()}
+    function addDays(dateStr,days){const d=new Date(dateStr+"T00:00:00");d.setDate(d.getDate()+days);return d.toISOString().slice(0,10)}
+    function addMonths(dateStr,months){const d=new Date(dateStr+"T00:00:00");d.setMonth(d.getMonth()+months);return d.toISOString().slice(0,10)}
+    function nextRepeatDate(dateStr,repeat){
+      if(!dateStr)return "";
+      if(repeat==="daily")return addDays(dateStr,1);
+      if(repeat==="weekly")return addDays(dateStr,7);
+      if(repeat==="monthly")return addMonths(dateStr,1);
+      return "";
+    }
+    function download(filename,content,type="application/json"){
+      const blob=new Blob([content],{type});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a");
+      a.href=url;a.download=filename;a.click();
+      URL.revokeObjectURL(url);
+    }
+    function fillCategorySelect(select,includeAll=false){
+      select.innerHTML="";
+      if(includeAll){
+        const opt=document.createElement("option");
+        opt.value="all";opt.textContent="全部分類";select.appendChild(opt);
+      }
+      categories.forEach(c=>{
+        const opt=document.createElement("option");
+        opt.value=c.id;opt.textContent=`${c.icon} ${c.name}`;
+        select.appendChild(opt);
+      });
+    }
+    async function seed(){
+      const k=await all(STORES.knowledge);
+      if(k.length)return;
+      for(const item of defaultKnowledge) await add(STORES.knowledge,{...item,tags:item.tags||[]});
+      await add(STORES.tasks,{title:"匯出 MiniAI 備份",category:"security",dueDate:"",reminderAt:"",repeat:"weekly",priority:"medium",note:"建議固定備份本機資料。",status:"open"});
+    }
+    function tokenize(text){
+      const l=String(text||"").toLowerCase();
+      const en=l.match(/[a-zA-Z0-9_]+/g)||[];
+      const zh=l.match(/[\u4e00-\u9fff]/g)||[];
+      const bi=[];
+      for(let i=0;i<zh.length-1;i++)bi.push(zh[i]+zh[i+1]);
+      return [...en,...zh,...bi];
+    }
+    function cosine(a,b){
+      const ta=tokenize(a),tb=tokenize(b);
+      if(!ta.length||!tb.length)return 0;
+      const ca={},cb={};
+      ta.forEach(x=>ca[x]=(ca[x]||0)+1);
+      tb.forEach(x=>cb[x]=(cb[x]||0)+1);
+      const keys=new Set([...Object.keys(ca),...Object.keys(cb)]);
+      let dot=0,na=0,nb=0;
+      keys.forEach(k=>{const va=ca[k]||0,vb=cb[k]||0;dot+=va*vb;na+=va*va;nb+=vb*vb});
+      return dot/(Math.sqrt(na)*Math.sqrt(nb));
+    }
+    function score(q,item){
+      const title=item.title||"",content=item.content||"",meta=[item.category,...(item.tags||[])].join(" ");
+      let s=cosine(q,title)*.55+cosine(q,content)*.35+cosine(q,meta)*.10;
+      const needle=q.toLowerCase();
+      if(title.toLowerCase().includes(needle))s+=.35;
+      if(content.toLowerCase().includes(needle))s+=.16;
+      if(meta.toLowerCase().includes(needle))s+=.16;
+      return s;
+    }
+    async function searchKnowledge(q,limit=5){
+      const rows=await all(STORES.knowledge);
+      return rows.map(item=>({item,score:score(q,item)})).filter(x=>x.score>.04).sort((a,b)=>b.score-a.score).slice(0,limit);
+    }
+    function simpleTransform(text,mode){
+      const c=clean(text);
+      const parts=c.split(/[。！？!?]\s*|\n+/).map(x=>x.trim()).filter(Boolean).slice(0,10);
+      if(mode==="summary") return ["本機摘要：","",...(parts.length?parts:["內容不足以摘要。"]).map((p,i)=>`${i+1}. ${p}`)].join("\n");
+      if(mode==="todo") return ["本機待辦：","",...(parts.length?parts:["請補上要處理的內容。"]).map(p=>`☐ ${p}`)].join("\n");
+      if(mode==="sop") return ["本機 SOP：","","目的：整理成可執行流程。","","步驟：",...(parts.length?parts:["請補上流程內容。"]).map((p,i)=>`${i+1}. ${p}`),"","檢查清單：","☐ 步驟是否完整","☐ 是否有時間 / 負責人","☐ 是否有風險提醒"].join("\n");
+      if(mode==="study") return ["本機學習卡片：","",...(parts.length?parts:["請補上學習內容。"]).map((p,i)=>`Q${i+1}：重點是什麼？\nA${i+1}：${p}`).join("\n\n")].join("\n");
+      return "";
+    }
+    async function answerLocal(text){
+      const q=clean(text);
+      if(!q)return {answer:"請先輸入內容。",sources:[]};
+      if(q.startsWith("學習：")||q.startsWith("學習:")){
+        const body=q.replace(/^學習[:：]/,"").trim();
+        if(!body.includes("=>"))return {answer:"格式：學習：標題 => 內容",sources:[]};
+        const [title,...rest]=body.split("=>");
+        await add(STORES.knowledge,{title:title.trim(),content:rest.join("=>").trim(),category:"general",tags:["快速學習"]});
+        return {answer:"已存入本機知識庫。",sources:[]};
+      }
+      const transformed=simpleTransform(q,currentMode);
+      if(transformed && q.length>12)return {answer:transformed,sources:[]};
+      const found=await searchKnowledge(q,5);
+      if(!found.length||found[0].score<.18)return {answer:"我在本機知識庫裡找不到足夠相關內容。\n\n可以先到「知識」新增資料，或用「模板」建立常用紀錄。",sources:[]};
+      const top=found.filter(x=>x.score>=.18).slice(0,3);
+      return {
+        answer:["我在本機找到這些相關內容：","",...top.map((x,i)=>`${i+1}. ${catIcon(x.item.category)} ${x.item.title}\n${clean(x.item.content).slice(0,420)}${clean(x.item.content).length>420?"…":""}`)].join("\n"),
+        sources:top.map(x=>x.item)
+      };
+    }
+    function addMessage(role,text,sources=[]){
+      const div=document.createElement("div");
+      div.className=`msg ${role}`;
+      div.textContent=text;
+      if(role==="ai"&&sources.length){
+        const box=document.createElement("div");
+        box.className="sourcebox";
+        box.textContent="參考知識：";
+        sources.slice(0,5).forEach(s=>{
+          const p=document.createElement("span");
+          p.className="pill accent";
+          p.textContent=s.title;
+          box.appendChild(p);
+        });
+        div.appendChild(box);
+      }
+      els.chatBox.appendChild(div);
+      requestAnimationFrame(()=>div.scrollIntoView({behavior:"smooth",block:"end"}));
+    }
+    async function saveChat(userText,aiText,sources=[]){
+      await add(STORES.chats,{userText,aiText,mode:currentMode,sourceTitles:sources.map(s=>s.title).slice(0,5)});
+    }
+    async function refreshStats(){
+      const [k,t]=await Promise.all([all(STORES.knowledge),all(STORES.tasks)]);
+      const open=t.filter(x=>x.status!=="done");
+      els.statKnowledge.textContent=k.length;
+      els.statTasks.textContent=open.length;
+      els.statDueToday.textContent=open.filter(x=>isDueToday(x.dueDate)).length;
+      els.statNotify.textContent=("Notification" in window)?Notification.permission:"不支援";
+      els.statusBadge.textContent=`本機｜${k.length} 知識｜${open.length} 任務`;
+      await renderHomeBrief(k,t);
+      renderCategories(k,t);
+    }
+    async function renderHomeBrief(k,t){
+      const open=t.filter(x=>x.status!=="done");
+      const due=open.filter(x=>isDueToday(x.dueDate));
+      const overdue=open.filter(x=>isOverdue(x.dueDate));
+      const high=open.filter(x=>x.priority==="high");
+      const lines=[
+        `今天：${today()}`,
+        `未完成 ${open.length} 件，今日到期 ${due.length} 件，逾期 ${overdue.length} 件。`,
+        "",
+        "優先處理：",
+        ...(overdue.concat(due,high).slice(0,5).length?overdue.concat(due,high).slice(0,5).map((x,i)=>`${i+1}. ${x.title}${x.dueDate?`｜${x.dueDate}`:""}`):["目前沒有急件。"]),
+        "",
+        "本機規則提醒：資料只存在此瀏覽器，記得定期備份。"
+      ];
+      els.todayBriefCard.textContent=lines.join("\n");
+    }
+    function renderCategories(k,t){
+      els.categoryGrid.innerHTML="";
+      categories.forEach(c=>{
+        const kc=k.filter(x=>x.category===c.id).length;
+        const tc=t.filter(x=>x.category===c.id&&x.status!=="done").length;
+        const div=document.createElement("button");
+        div.className="category";
+        div.innerHTML=`<div class="icon">${c.icon}</div><div class="name">${escapeHTML(c.name)}</div><div class="count">知識 ${kc}｜任務 ${tc}</div>`;
+        div.onclick=()=>{showView("knowledgeView");els.categoryFilter.value=c.id;renderKnowledge()};
+        els.categoryGrid.appendChild(div);
+      });
+    }
+    function showView(id){
+      $$(".view").forEach(v=>v.classList.toggle("active",v.id===id));
+      $$(".bottom-nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===id));
+      if(id==="tasksView")renderTasks();
+      if(id==="knowledgeView")renderKnowledge();
+      if(id==="templatesView")renderTemplates();
+      if(id==="homeView")refreshStats();
+      window.scrollTo({top:0,behavior:"smooth"});
+    }
+    async function renderTasks(){
+      let rows=await all(STORES.tasks);
+      const q=els.taskSearch.value.trim().toLowerCase();
+      const f=els.taskFilter.value;
+      if(q)rows=rows.filter(x=>[x.title,x.note,x.category,x.dueDate,x.priority].join(" ").toLowerCase().includes(q));
+      if(f==="open")rows=rows.filter(x=>x.status!=="done");
+      if(f==="done")rows=rows.filter(x=>x.status==="done");
+      if(els.taskSort.value==="due")rows.sort((a,b)=>(a.dueDate||"9999-99-99").localeCompare(b.dueDate||"9999-99-99"));
+      if(els.taskSort.value==="priority"){const order={high:0,medium:1,low:2};rows.sort((a,b)=>(order[a.priority]??9)-(order[b.priority]??9))}
+      if(els.taskSort.value==="newest")rows.sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
+      els.taskList.innerHTML="";
+      if(!rows.length){els.taskList.innerHTML='<div class="empty">沒有任務。</div>';return}
+      rows.forEach(x=>{
+        const div=document.createElement("div");
+        div.className=`item ${x.status==="done"?"done":""}`;
+        const dueClass=x.status==="done"?"ok":isOverdue(x.dueDate)?"danger":isDueToday(x.dueDate)?"warn":"accent";
+        div.innerHTML=`
+          <div class="item-head">
+            <div>
+              <div class="item-title">${x.status==="done"?"✓ ":""}${escapeHTML(x.title)}</div>
+              <div class="small">${escapeHTML(x.note||"")}</div>
+            </div>
+            <div class="item-actions">
+              <button class="ok" data-done="${x.id}">${x.status==="done"?"恢復":"完成"}</button>
+              <button data-edit="${x.id}">編輯</button>
+              <button class="danger" data-del="${x.id}">刪除</button>
+            </div>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <span class="pill ${dueClass}">${x.dueDate?escapeHTML(x.dueDate):"無到期"}</span>
+            <span class="pill accent">${catIcon(x.category)} ${escapeHTML(catName(x.category))}</span>
+            <span class="pill">優先：${escapeHTML(priorityText[x.priority]||x.priority)}</span>
+            ${x.repeat?`<span class="pill ok">重複：${escapeHTML(repeatText[x.repeat]||x.repeat)}</span>`:""}
+            ${x.reminderAt?`<span class="pill warn">提醒：${escapeHTML(x.reminderAt.replace("T"," "))}</span>`:""}
+          </div>`;
+        div.querySelector("[data-done]").onclick=async()=>{
+          if(x.status==="done"){
+            x.status="open";
+          }else{
+            x.status="done";
+            if(x.repeat&&x.dueDate){
+              const next=nextRepeatDate(x.dueDate,x.repeat);
+              if(next){
+                await add(STORES.tasks,{...x,id:undefined,status:"open",dueDate:next,reminderAt:"",createdAt:undefined,updatedAt:undefined});
+              }
+            }
+          }
+          await put(STORES.tasks,x);await renderTasks();await refreshStats();
+        };
+        div.querySelector("[data-edit]").onclick=()=>openTaskDialog(x);
+        div.querySelector("[data-del]").onclick=async()=>{if(confirm("確定刪除任務？")){await del(STORES.tasks,x.id);await renderTasks();await refreshStats()}};
+        els.taskList.appendChild(div);
+      });
+    }
+    async function renderKnowledge(){
+      let rows=await all(STORES.knowledge);
+      const q=els.knowledgeSearch.value.trim().toLowerCase();
+      const c=els.categoryFilter.value;
+      if(c&&c!=="all")rows=rows.filter(x=>x.category===c);
+      if(q)rows=rows.filter(x=>[x.title,x.content,x.category,...(x.tags||[])].join(" ").toLowerCase().includes(q));
+      if(els.knowledgeSort.value==="newest")rows.sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
+      if(els.knowledgeSort.value==="oldest")rows.sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt)));
+      if(els.knowledgeSort.value==="category")rows.sort((a,b)=>String(a.category).localeCompare(String(b.category)));
+      els.knowledgeList.innerHTML="";
+      if(!rows.length){els.knowledgeList.innerHTML='<div class="empty">沒有知識。</div>';return}
+      rows.forEach(x=>{
+        const div=document.createElement("div");
+        div.className="item";
+        const excerpt=clean(x.content).slice(0,520)+(clean(x.content).length>520?"…":"");
+        div.innerHTML=`
+          <div class="item-head">
+            <div>
+              <div class="item-title">${escapeHTML(x.title)}</div>
+              <div class="small">${new Date(x.createdAt||Date.now()).toLocaleString()}</div>
+            </div>
+            <div class="item-actions">
+              <button data-edit="${x.id}">編輯</button>
+              <button class="danger" data-del="${x.id}">刪除</button>
+            </div>
+          </div>
+          <div style="margin-top:8px;line-height:1.65">${escapeHTML(excerpt)}</div>
+          <div class="row" style="margin-top:8px">
+            <span class="pill accent">${catIcon(x.category)} ${escapeHTML(catName(x.category))}</span>
+            ${(x.tags||[]).map(t=>`<span class="pill">${escapeHTML(t)}</span>`).join("")}
+          </div>`;
+        div.querySelector("[data-edit]").onclick=()=>openKnowledgeDialog(x);
+        div.querySelector("[data-del]").onclick=async()=>{if(confirm("確定刪除知識？")){await del(STORES.knowledge,x.id);await renderKnowledge();await refreshStats()}};
+        els.knowledgeList.appendChild(div);
+      });
+    }
+    function renderTemplates(){
+      els.templateGrid.innerHTML="";
+      templates.forEach(t=>{
+        const div=document.createElement("div");
+        div.className="template-card";
+        div.innerHTML=`
+          <div class="template-title">${catIcon(t.category)} ${escapeHTML(t.title)}</div>
+          <div class="small">${escapeHTML(t.desc)}</div>
+          <div class="row" style="margin-top:10px"><button class="primary" data-use="${t.id}">使用</button></div>`;
+        div.querySelector("[data-use]").onclick=()=>openTemplateDialog(t.id);
+        els.templateGrid.appendChild(div);
+      });
+    }
+    function openTaskDialog(task=null){
+      editTaskId=task?task.id:null;
+      els.taskDialogTitle.textContent=task?"編輯任務":"新增任務";
+      els.taskTitle.value=task?.title||"";
+      els.taskCategory.value=task?.category||"general";
+      els.taskDue.value=task?.dueDate||"";
+      els.taskReminder.value=task?.reminderAt||"";
+      els.taskRepeat.value=task?.repeat||"";
+      els.taskPriority.value=task?.priority||"medium";
+      els.taskNote.value=task?.note||"";
+      els.taskDialog.showModal();
+    }
+    async function saveTask(){
+      if(!els.taskTitle.value.trim()){alert("任務內容不能空白。");return}
+      const item={
+        title:els.taskTitle.value.trim(),
+        category:els.taskCategory.value,
+        dueDate:els.taskDue.value,
+        reminderAt:els.taskReminder.value,
+        repeat:els.taskRepeat.value,
+        priority:els.taskPriority.value,
+        note:els.taskNote.value.trim(),
+        status:"open"
+      };
+      if(editTaskId){
+        const old=await get(STORES.tasks,editTaskId);
+        await put(STORES.tasks,{...old,...item});
+      }else{
+        await add(STORES.tasks,item);
+      }
+      els.taskDialog.close();
+      await renderTasks();await refreshStats();
+    }
+    function openKnowledgeDialog(item=null){
+      editKnowledgeId=item?item.id:null;
+      els.knowledgeDialogTitle.textContent=item?"編輯知識":"新增知識";
+      els.knowledgeTitle.value=item?.title||"";
+      els.knowledgeCategory.value=item?.category||"general";
+      els.knowledgeTags.value=(item?.tags||[]).join(", ");
+      els.knowledgeContent.value=item?.content||"";
+      els.knowledgeDialog.showModal();
+    }
+    async function saveKnowledge(){
+      if(!els.knowledgeTitle.value.trim()||!els.knowledgeContent.value.trim()){alert("標題和內容都要填。");return}
+      const item={title:els.knowledgeTitle.value.trim(),category:els.knowledgeCategory.value,tags:tags(els.knowledgeTags.value),content:els.knowledgeContent.value.trim()};
+      if(editKnowledgeId){
+        const old=await get(STORES.knowledge,editKnowledgeId);
+        await put(STORES.knowledge,{...old,...item});
+      }else{
+        await add(STORES.knowledge,item);
+      }
+      els.knowledgeDialog.close();
+      await renderKnowledge();await refreshStats();
+    }
+    function openTemplateDialog(templateId="stock"){
+      const t=templates.find(x=>x.id===templateId)||templates[0];
+      els.templateSelect.value=t.id;
+      els.templateCategory.value=t.category;
+      els.templateTitle.value=t.title+"｜"+today();
+      els.templateContent.value=t.content;
+      els.templateDialog.showModal();
+    }
+    async function saveTemplateAsKnowledge(){
+      if(!els.templateTitle.value.trim()){alert("標題不能空白。");return}
+      await add(STORES.knowledge,{title:els.templateTitle.value.trim(),category:els.templateCategory.value,tags:["模板"],content:els.templateContent.value});
+      els.templateDialog.close();
+      showView("knowledgeView");
+      await renderKnowledge();await refreshStats();
+    }
+    function splitChunks(text,max=800){
+      const c=clean(text);
+      const ps=c.split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean);
+      const out=[];let cur="";
+      for(const p of ps){
+        if((cur+"\n\n"+p).length<=max)cur=cur?cur+"\n\n"+p:p;
+        else{
+          if(cur)out.push(cur);
+          if(p.length<=max)cur=p;
+          else{for(let i=0;i<p.length;i+=max)out.push(p.slice(i,i+max));cur=""}
+        }
+      }
+      if(cur)out.push(cur);
+      return out.length?out:[c].filter(Boolean);
+    }
+    async function importDocs(files){
+      let count=0;
+      for(const file of files){
+        els.docStatus.textContent=`處理中：${file.name}`;
+        try{
+          const text=await file.text();
+          if(file.name.toLowerCase().endsWith(".json")){
+            const parsed=JSON.parse(text);
+            const rows=Array.isArray(parsed)?parsed:(parsed.knowledge||[]);
+            if(Array.isArray(rows)&&rows.length){
+              for(const r of rows){
+                const title=r.title||r.question||r.sourceName||file.name;
+                const content=r.content||r.answer||"";
+                if(!content)continue;
+                await add(STORES.knowledge,{title,content,category:r.category||els.docCategory.value,tags:[...tags(r.tags||[]),...tags(els.docTags.value)],sourceName:r.sourceName||file.name});
+                count++;
+              }
+              continue;
+            }
+          }
+          const chunks=splitChunks(text,Number(els.chunkSize.value||800));
+          for(let i=0;i<chunks.length;i++){
+            await add(STORES.knowledge,{title:`${file.name} #${i+1}`,content:chunks[i],category:els.docCategory.value,tags:tags(els.docTags.value||"匯入"),sourceName:file.name});
+            count++;
+          }
+        }catch(e){
+          console.error(e);
+          addMessage("system",`匯入失敗：${file.name}`);
+        }
+      }
+      els.docStatus.textContent=`完成：新增 ${count} 筆知識。`;
+      await renderKnowledge();await refreshStats();
+    }
+    async function exportAll(){
+      const payload={app:"MiniAI Local Final",version:"final-1.0",exportedAt:new Date().toISOString(),knowledge:await all(STORES.knowledge),tasks:await all(STORES.tasks),chats:await all(STORES.chats)};
+      download(`miniai-local-final-backup-${today()}.json`,JSON.stringify(payload,null,2));
+    }
+    async function importBackup(file){
+      try{
+        const parsed=JSON.parse(await file.text());
+        const knowledge=Array.isArray(parsed)?parsed:(parsed.knowledge||[]);
+        const tasks=parsed.tasks||[];
+        const chats=parsed.chats||[];
+        let kc=0,tc=0,cc=0;
+        for(const x of knowledge){if(x.content){await add(STORES.knowledge,{title:x.title||x.question||"匯入知識",content:x.content||x.answer||"",category:x.category||"general",tags:tags(x.tags||["匯入"]),sourceName:x.sourceName||""});kc++}}
+        for(const x of tasks){if(x.title){await add(STORES.tasks,{title:x.title,category:x.category||"general",dueDate:x.dueDate||"",reminderAt:x.reminderAt||"",repeat:x.repeat||"",priority:x.priority||"medium",note:x.note||"",status:x.status||"open"});tc++}}
+        for(const x of chats){if(x.userText||x.aiText){await add(STORES.chats,{userText:x.userText||"",aiText:x.aiText||"",mode:x.mode||"general",sourceTitles:x.sourceTitles||[]});cc++}}
+        alert(`匯入完成：知識 ${kc}、任務 ${tc}、聊天 ${cc}`);
+        await refreshStats();await renderKnowledge();await renderTasks();
+      }catch(e){alert("匯入失敗，請確認 JSON 備份格式。")}
+    }
+    async function exportKnowledge(){
+      const payload={app:"MiniAI Local Final Knowledge",exportedAt:new Date().toISOString(),knowledge:await all(STORES.knowledge)};
+      download(`miniai-knowledge-${today()}.json`,JSON.stringify(payload,null,2));
+    }
+    function icsDate(d){return String(d).replaceAll("-","")}
+    function icsEscape(v){return String(v||"").replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\n/g,"\\n")}
+    async function exportIcs(){
+      const rows=(await all(STORES.tasks)).filter(x=>x.status!=="done"&&x.dueDate);
+      if(!rows.length){alert("沒有可匯出的未完成到期任務。");return}
+      const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//MiniAI Local Final//Tasks//ZH-TW"];
+      rows.forEach(x=>{
+        lines.push("BEGIN:VEVENT",`UID:miniai-final-${x.id}-${location.hostname||"local"}`,`DTSTAMP:${new Date().toISOString().replace(/[-:]/g,"").split(".")[0]}Z`,`DTSTART;VALUE=DATE:${icsDate(x.dueDate)}`,`SUMMARY:${icsEscape(x.title)}`,`DESCRIPTION:${icsEscape([x.note,`分類：${catName(x.category)}`,`優先級：${priorityText[x.priority]||x.priority}`].filter(Boolean).join("\\n"))}`,"END:VEVENT");
+      });
+      lines.push("END:VCALENDAR");
+      download(`miniai-tasks-${today()}.ics`,lines.join("\r\n"),"text/calendar");
+    }
+    function showNotification(title,body){
+      if(!("Notification" in window)||Notification.permission!=="granted")return;
+      try{new Notification(title,{body,tag:"miniai-final"})}catch(e){}
+    }
+    async function checkReminders(silent=false){
+      const rows=(await all(STORES.tasks)).filter(x=>x.status!=="done");
+      const due=rows.filter(x=>isDueToday(x.dueDate)||isOverdue(x.dueDate));
+      const now=new Date();
+      const remind=rows.filter(x=>x.reminderAt&&new Date(x.reminderAt)<=now&&!notified.has(x.id));
+      remind.forEach(x=>{notified.add(x.id);showNotification("MiniAI 任務提醒",x.title);});
+      if(!silent){
+        const txt=`提醒檢查：到期 / 逾期 ${due.length} 件，已觸發提醒 ${remind.length} 件。`;
+        addMessage("system",txt);
+        alert(txt);
+      }
+      await refreshStats();
+    }
+    async function enableNotifications(){
+      if(!("Notification" in window)){alert("此瀏覽器不支援通知。");return}
+      const p=await Notification.requestPermission();
+      if(p==="granted"){showNotification("MiniAI 通知已啟用","任務提醒會在 App 開啟或背景允許時觸發。");}
+      await refreshStats();
+    }
+    function startTimer(){
+      if(reminderTimer)clearInterval(reminderTimer);
+      reminderTimer=setInterval(()=>checkReminders(true),30*60*1000);
+    }
+    function initEvents(){
+      $$(".bottom-nav button").forEach(b=>b.onclick=()=>showView(b.dataset.view));
+      $$(".tabs button").forEach(b=>b.onclick=()=>{$$(".tabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active");currentMode=b.dataset.mode;localStorage.setItem("miniai_final_mode",currentMode)});
+      $$(".tabs button").forEach(b=>b.classList.toggle("active",b.dataset.mode===currentMode));
+      els.chatForm.onsubmit=async e=>{
+        e.preventDefault();
+        const text=els.chatInput.value.trim();
+        if(!text)return;
+        addMessage("user",text);
+        els.chatInput.value="";
+        const result=await answerLocal(text);
+        addMessage("ai",result.answer,result.sources);
+        await saveChat(text,result.answer,result.sources);
+        await refreshStats();
+      };
+      els.homeBriefBtn.onclick=()=>refreshStats();
+      els.quickAddTaskBtn.onclick=()=>openTaskDialog();
+      els.taskNewBtn.onclick=()=>openTaskDialog();
+      els.cancelTaskBtn.onclick=()=>els.taskDialog.close();
+      els.saveTaskBtn.onclick=saveTask;
+      els.taskSearch.oninput=renderTasks;els.taskFilter.onchange=renderTasks;els.taskSort.onchange=renderTasks;
+      els.taskCheckBtn.onclick=()=>checkReminders(false);
+      els.exportIcsBtn.onclick=exportIcs;
+      els.addCategoryNoteBtn.onclick=()=>openKnowledgeDialog();
+      els.quickAddKnowledgeBtn.onclick=()=>openKnowledgeDialog();
+      els.knowledgeNewBtn.onclick=()=>openKnowledgeDialog();
+      els.cancelKnowledgeBtn.onclick=()=>els.knowledgeDialog.close();
+      els.saveKnowledgeBtn.onclick=saveKnowledge;
+      els.knowledgeSearch.oninput=renderKnowledge;els.categoryFilter.onchange=renderKnowledge;els.knowledgeSort.onchange=renderKnowledge;
+      els.importDocBtn.onclick=()=>{els.docStatus.textContent="";els.docDialog.showModal()};
+      els.closeDocBtn.onclick=()=>els.docDialog.close();
+      els.chooseDocBtn.onclick=()=>els.docFile.click();
+      els.docFile.onchange=async()=>{await importDocs(els.docFile.files);els.docFile.value=""};
+      els.exportKnowledgeBtn.onclick=exportKnowledge;
+      els.newFromTemplateBtn.onclick=()=>openTemplateDialog();
+      els.cancelTemplateBtn.onclick=()=>els.templateDialog.close();
+      els.saveTemplateBtn.onclick=saveTemplateAsKnowledge;
+      els.templateSelect.onchange=()=>openTemplateDialog(els.templateSelect.value);
+      els.quickBackupBtn.onclick=exportAll;els.exportAllBtn.onclick=exportAll;
+      els.importAllBtn.onclick=()=>els.backupFile.click();
+      els.backupFile.onchange=async()=>{const f=els.backupFile.files[0];if(f)await importBackup(f);els.backupFile.value=""};
+      els.quickNotifyBtn.onclick=enableNotifications;els.enableNotifyBtn.onclick=enableNotifications;
+      els.runReminderBtn.onclick=()=>checkReminders(false);
+      els.resetBtn.onclick=async()=>{if(!confirm("確定重置？這會刪除本機知識、任務與聊天紀錄。"))return;await clear(STORES.knowledge);await clear(STORES.tasks);await clear(STORES.chats);await seed();await refreshStats();await renderKnowledge();await renderTasks();els.chatBox.innerHTML="";addMessage("system","已重置本機資料。")};
+      window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;els.installBtn.hidden=false});
+      els.installBtn.onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;els.installBtn.hidden=true};
+    }
+    function initSelects(){
+      [els.taskCategory,els.knowledgeCategory,els.templateCategory,els.docCategory].forEach(s=>fillCategorySelect(s,false));
+      fillCategorySelect(els.categoryFilter,true);
+      els.templateSelect.innerHTML="";
+      templates.forEach(t=>{const opt=document.createElement("option");opt.value=t.id;opt.textContent=`${catIcon(t.category)} ${t.title}`;els.templateSelect.appendChild(opt)});
+    }
+    async function boot(){
+      try{
+        db=await openDB();
+        initSelects();
+        initEvents();
+        await seed();
+        await refreshStats();
+        renderTemplates();
+        addMessage("ai","MiniAI Local Final 已啟動。這是完全本機版，可做知識庫、任務、模板、提醒與備份。");
+        if("serviceWorker" in navigator){
+          try{await navigator.serviceWorker.register("./service-worker.js");addMessage("system","離線快取已準備好。若剛升級，請重新整理一次。")}catch(e){addMessage("system","Service Worker 未啟用。部署到 HTTPS 後即可使用離線快取。")}
+        }
+        startTimer();
+        checkReminders(true);
+      }catch(e){
+        console.error(e);
+        alert("初始化失敗。請確認瀏覽器支援 IndexedDB。");
+      }
+    }
+    boot();
+  </script>
 </body>
 </html>

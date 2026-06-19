@@ -1,15 +1,26 @@
-const CACHE_NAME = "miniai-local-v8-cache-1";
-const APP_SHELL = ["./","./index.html","./manifest.json","./service-worker.js","./icon-192.svg","./icon-512.svg"];
+const CACHE_NAME = "miniai-local-final-cache-v1";
+const APP_SHELL = [
+  "./",
+  "./index.html",
+  "./manifest.json",
+  "./service-worker.js",
+  "./icon-192.svg",
+  "./icon-512.svg"
+];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
+  );
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(caches.keys().then((keys) =>
-    Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))
-  ));
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))
+    )
+  );
   self.clients.claim();
 });
 
